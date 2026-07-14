@@ -73,10 +73,7 @@ export default async function Home() {
                 }
                 active={!payload.meta.message?.includes("must be registered")}
               />
-              <StatusPill
-                label={`Poll ${env.displayPollSeconds}s`}
-                active={true}
-              />
+              <StatusPill label="Browser refresh manual" active={true} />
             </div>
 
             <div className="flex flex-wrap gap-3">

@@ -114,5 +114,5 @@ pnpm dev
 ## Suggested Next Steps
 
 1. Tesla Fleet API 실차 응답을 확인하면서 `charge_state` 매핑을 보정합니다.
-2. ESP32에서 `/api/display` polling 후 동일한 3줄 레이아웃으로 렌더링합니다.
+2. ESP32에서 `/api/display`를 필요한 주기로 호출하고 동일한 3줄 레이아웃으로 렌더링합니다.
 3. 이후 `calendar`, `weather`, `freezer` 블록을 같은 JSON 루트에 확장합니다.

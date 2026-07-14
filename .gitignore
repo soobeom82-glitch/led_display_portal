@@ -25,6 +25,7 @@
 .data
 .DS_Store
 *.pem
+!src/app/.well-known/appspecific/com.tesla.3p.public-key.pem/route.ts
 
 # debug
 npm-debug.log*

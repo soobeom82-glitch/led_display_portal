@@ -8,7 +8,11 @@ export const dynamic = "force-dynamic";
 export default async function DisplayPage({
   searchParams,
 }: {
-  searchParams: Promise<{ oauth?: string; error?: string }>;
+  searchParams: Promise<{
+    oauth?: string;
+    error?: string;
+    registered?: string;
+  }>;
 }) {
   const params = await searchParams;
   const payload = await getDisplayPayload();
@@ -24,6 +28,13 @@ export default async function DisplayPage({
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
             Tesla OAuth connected. Refresh token is now available to the display
             service.
+          </div>
+        ) : null}
+
+        {params.registered === "connected" ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
+            Tesla partner account registered. The app can now call Fleet API
+            endpoints for this region.
           </div>
         ) : null}
 

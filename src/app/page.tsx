@@ -66,6 +66,14 @@ export default async function Home() {
                 active={payload.meta.source === "tesla-live"}
               />
               <StatusPill
+                label={
+                  payload.meta.message?.includes("must be registered")
+                    ? "Partner registration required"
+                    : "Partner registration clear"
+                }
+                active={!payload.meta.message?.includes("must be registered")}
+              />
+              <StatusPill
                 label={`Poll ${env.displayPollSeconds}s`}
                 active={true}
               />
@@ -83,6 +91,12 @@ export default async function Home() {
                 className="rounded-full border border-black/10 bg-white/70 px-5 py-3 text-sm font-semibold text-black transition-transform hover:-translate-y-0.5"
               >
                 Start Tesla Login
+              </Link>
+              <Link
+                href="/api/tesla/register?redirect=/display"
+                className="rounded-full border border-black/10 bg-white/70 px-5 py-3 text-sm font-semibold text-black transition-transform hover:-translate-y-0.5"
+              >
+                Register Tesla Partner
               </Link>
               <Link
                 href="/api/display"
@@ -188,6 +202,10 @@ export default async function Home() {
             <li>
               3. 로컬에서는 파일 기반 토큰 저장을 쓰고, Vercel에서는 KV 또는
               `TESLA_REFRESH_TOKEN` 환경변수 fallback을 선택할 수 있습니다.
+            </li>
+            <li>
+              4. 등록되지 않은 계정이면 `Register Tesla Partner`로 one-time
+              partner registration을 먼저 실행합니다.
             </li>
           </ol>
         </article>

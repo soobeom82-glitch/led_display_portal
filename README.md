@@ -22,6 +22,8 @@ ESP32 / Browser Display
   Tesla OAuth 시작점
 - `/api/tesla/callback`
   Authorization code를 refresh token으로 교환하고 저장
+- `/api/tesla/register`
+  Tesla partner account one-time registration
 - `/api/display`
   LED/브라우저 공용 JSON API
 - `/display`
@@ -40,11 +42,15 @@ cp .env.example .env.local
 - `TESLA_CLIENT_ID`
 - `TESLA_CLIENT_SECRET`
 - `TESLA_REDIRECT_URI`
+- `TESLA_PUBLIC_KEY_PEM`
 - `TESLA_VEHICLE_ID` (선택)
 - `DISPLAY_API_KEY` (권장)
 
 선택 변수:
 
+- `TESLA_PARTNER_AUTH_BASE_URL`
+- `TESLA_PARTNER_SCOPE`
+- `TESLA_APP_DOMAIN`
 - `TESLA_REFRESH_TOKEN`
   이미 확보한 refresh token을 직접 넣고 싶을 때 사용
 - `KV_REST_API_URL`
@@ -62,9 +68,11 @@ pnpm dev
 실제 Tesla 연동을 보려면:
 
 1. `.env.local`에 Tesla OAuth 값 입력
-2. `http://localhost:3000/login` 접속
-3. Tesla 로그인 완료
-4. `/display` 또는 `/api/display` 확인
+2. `TESLA_PUBLIC_KEY_PEM`에 secp256r1 public key 설정
+3. `http://localhost:3000/api/tesla/register?redirect=/display`로 partner registration 실행
+4. `http://localhost:3000/login` 접속
+5. Tesla 로그인 완료
+6. `/display` 또는 `/api/display` 확인
 
 ## Token Storage Notes
 

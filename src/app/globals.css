@@ -52,15 +52,16 @@ a {
 
 .display-board {
   background:
-    radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 30%),
-    linear-gradient(180deg, #1f2025 0%, #121318 100%);
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 24%),
+    radial-gradient(circle at bottom left, rgba(249, 115, 22, 0.1), transparent 28%),
+    linear-gradient(180deg, #101318 0%, #090b0f 100%);
   box-shadow:
-    0 24px 80px rgba(31, 26, 19, 0.18),
+    0 24px 80px rgba(5, 8, 14, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .display-glow {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 18px 48px var(--glow);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 56px rgba(0, 0, 0, 0.4);
 }
 
 .fine-grid {

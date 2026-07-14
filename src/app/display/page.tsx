@@ -15,10 +15,10 @@ export default async function DisplayPage({
   const env = getAppEnv();
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-12">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
       <DisplayAutoRefresh seconds={env.displayPollSeconds} />
 
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,245,234,0.9),transparent_32%),linear-gradient(180deg,#f8f3ec_0%,#efe6da_50%,#e3d2c0_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,164,106,0.24),transparent_24%),radial-gradient(circle_at_bottom,rgba(255,120,68,0.12),transparent_30%),linear-gradient(180deg,#120f14_0%,#1e1716_48%,#2c2018_100%)]" />
       <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-6">
         {params.oauth === "connected" ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
@@ -36,11 +36,11 @@ export default async function DisplayPage({
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
           <DisplayBoard payload={payload} />
 
-          <aside className="ambient-shell rounded-[28px] border border-[var(--border)] p-6">
-            <p className="font-mono text-xs uppercase tracking-[0.28em] text-black/40">
+          <aside className="rounded-[28px] border border-white/10 bg-white/8 p-6 text-white/88 backdrop-blur-md">
+            <p className="font-mono text-xs uppercase tracking-[0.28em] text-white/45">
               Display Notes
             </p>
-            <div className="mt-4 space-y-4 text-sm leading-7 text-black/70">
+            <div className="mt-4 space-y-4 text-sm leading-7 text-white/72">
               <p>
                 이 페이지는 LED 디스플레이를 대신하는 브라우저 미리보기입니다.
                 새로고침 없이 {env.displayPollSeconds}초마다 서버 데이터를 다시

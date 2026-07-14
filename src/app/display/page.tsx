@@ -44,6 +44,12 @@ export default async function DisplayPage({
           </div>
         ) : null}
 
+        {!params.error && payload.meta.message ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/85 px-4 py-3 text-sm text-amber-800">
+            Tesla status: {payload.meta.message}
+          </div>
+        ) : null}
+
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
           <DisplayBoard payload={payload} />
 

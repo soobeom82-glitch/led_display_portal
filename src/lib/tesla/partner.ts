@@ -14,6 +14,26 @@ interface TeslaRegisterResponse {
   error_description?: string;
 }
 
+function looksLikePemPublicKey(value: string) {
+  return (
+    value.includes("-----BEGIN PUBLIC KEY-----") &&
+    value.includes("-----END PUBLIC KEY-----")
+  );
+}
+
+function normalizeTeslaAppDomain(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  const withProtocol = trimmed.includes("://") ? trimmed : `https://${trimmed}`;
+  const parsed = new URL(withProtocol);
+
+  return parsed.hostname;
+}
+
 function assertPartnerConfig() {
   const env = getAppEnv();
 
@@ -29,6 +49,12 @@ function assertPartnerConfig() {
     );
   }
 
+  if (!looksLikePemPublicKey(env.teslaPublicKeyPem)) {
+    throw new Error(
+      "TESLA_PUBLIC_KEY_PEM must contain the full PEM block, including BEGIN PUBLIC KEY and END PUBLIC KEY.",
+    );
+  }
+
   return env;
 }
 
@@ -36,7 +62,7 @@ export function getTeslaAppDomain(requestUrl?: string) {
   const env = getAppEnv();
 
   if (env.teslaAppDomain) {
-    return env.teslaAppDomain;
+    return normalizeTeslaAppDomain(env.teslaAppDomain);
   }
 
   if (!requestUrl) {
@@ -45,7 +71,7 @@ export function getTeslaAppDomain(requestUrl?: string) {
     );
   }
 
-  return new URL(requestUrl).hostname;
+  return normalizeTeslaAppDomain(new URL(requestUrl).hostname);
 }
 
 export async function getTeslaPartnerAccessToken() {

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   } catch (caughtError) {
     const message =
       caughtError instanceof Error
-        ? caughtError.message
+        ? (caughtError.message.trim() || "partner_registration_failed")
         : "partner_registration_failed";
 
     return NextResponse.redirect(

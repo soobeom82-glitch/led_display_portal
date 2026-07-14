@@ -11,6 +11,16 @@ function getLocalTokenPath() {
   return path.join(process.cwd(), ".data", "tesla-oauth.json");
 }
 
+function isVercelRuntime() {
+  return Boolean(process.env.VERCEL);
+}
+
+function getVercelStorageError() {
+  return new Error(
+    "Vercel needs a persistent token store. Add KV_REST_API_URL and KV_REST_API_TOKEN, or set TESLA_REFRESH_TOKEN manually.",
+  );
+}
+
 async function readFromKv() {
   const { kv } = await import("@vercel/kv");
   return (await kv.get<StoredTeslaTokens>(TOKEN_STORE_KEY)) ?? null;
@@ -39,7 +49,11 @@ async function writeToFile(tokens: StoredTeslaTokens) {
 export async function readTeslaTokens() {
   const env = getAppEnv();
   const stored =
-    env.storageMode === "kv" ? await readFromKv() : await readFromFile();
+    env.storageMode === "kv"
+      ? await readFromKv()
+      : isVercelRuntime()
+        ? null
+        : await readFromFile();
 
   if (stored?.refreshToken) {
     return stored;
@@ -79,6 +93,10 @@ export async function saveTeslaTokens(input: {
   if (env.storageMode === "kv") {
     await writeToKv(tokens);
     return tokens;
+  }
+
+  if (isVercelRuntime()) {
+    throw getVercelStorageError();
   }
 
   await writeToFile(tokens);

@@ -1,13 +1,5 @@
 type StorageMode = "file" | "kv";
 
-function parseBoolean(value: string | undefined, fallback: boolean) {
-  if (value === undefined) {
-    return fallback;
-  }
-
-  return value === "1" || value.toLowerCase() === "true";
-}
-
 function parseNumber(value: string | undefined, fallback: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -34,7 +26,6 @@ export function getAppEnv() {
     teslaScope:
       process.env.TESLA_SCOPE?.trim() ?? "offline_access vehicle_device_data",
     teslaRefreshToken: process.env.TESLA_REFRESH_TOKEN?.trim() ?? "",
-    teslaMockMode: parseBoolean(process.env.TESLA_MOCK_MODE, true),
     displayApiKey: process.env.DISPLAY_API_KEY?.trim() ?? "",
     displayTimezone: process.env.DISPLAY_TIMEZONE?.trim() ?? "Asia/Seoul",
     displayPollSeconds: parseNumber(process.env.DISPLAY_POLL_SECONDS, 60),

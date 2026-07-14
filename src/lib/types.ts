@@ -39,7 +39,7 @@ export interface TeslaDisplayState {
   status: string;
   complete: boolean;
   vehicleName: string | null;
-  source: "mock" | "tesla-live" | "tesla-fallback";
+  source: "tesla-live" | "tesla-fallback";
 }
 
 export interface DisplayPayload {
@@ -49,7 +49,6 @@ export interface DisplayPayload {
   meta: {
     source: TeslaDisplayState["source"];
     updatedAt: string;
-    usingMock: boolean;
     message?: string;
   };
 }

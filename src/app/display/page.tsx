@@ -52,9 +52,7 @@ export default async function DisplayPage({
               </p>
               <p>
                 Source:{" "}
-                <span className="font-mono">
-                  {payload.meta.usingMock ? "mock" : "tesla-live"}
-                </span>
+                <span className="font-mono">{payload.meta.source}</span>
               </p>
             </div>
           </aside>

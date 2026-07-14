@@ -59,11 +59,11 @@ export default async function Home() {
               />
               <StatusPill
                 label={
-                  payload.meta.usingMock
-                    ? "Mock display active"
-                    : "Live display active"
+                  payload.meta.source === "tesla-live"
+                    ? "Live Tesla active"
+                    : "Tesla data pending"
                 }
-                active={!payload.meta.usingMock}
+                active={payload.meta.source === "tesla-live"}
               />
               <StatusPill
                 label={`Poll ${env.displayPollSeconds}s`}

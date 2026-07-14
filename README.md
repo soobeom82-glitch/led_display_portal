@@ -26,8 +26,6 @@ ESP32 / Browser Display
   LED/브라우저 공용 JSON API
 - `/display`
   LED 역할을 대신하는 브라우저 미리보기
-- mock fallback
-  Tesla OAuth가 아직 없어도 UI와 JSON을 먼저 개발 가능
 
 ## Environment
 
@@ -44,7 +42,6 @@ cp .env.example .env.local
 - `TESLA_REDIRECT_URI`
 - `TESLA_VEHICLE_ID` (선택)
 - `DISPLAY_API_KEY` (권장)
-- `TESLA_MOCK_MODE`
 
 선택 변수:
 
@@ -62,15 +59,12 @@ Node 20+가 필요합니다.
 pnpm dev
 ```
 
-기본값은 `TESLA_MOCK_MODE=true` 이므로, OAuth 없이도 먼저 `/display`와 `/api/display`가 동작합니다.
-
 실제 Tesla 연동을 보려면:
 
 1. `.env.local`에 Tesla OAuth 값 입력
-2. `TESLA_MOCK_MODE=false`
-3. `http://localhost:3000/login` 접속
-4. Tesla 로그인 완료
-5. `/display` 또는 `/api/display` 확인
+2. `http://localhost:3000/login` 접속
+3. Tesla 로그인 완료
+4. `/display` 또는 `/api/display` 확인
 
 ## Token Storage Notes
 
@@ -99,8 +93,7 @@ pnpm dev
   },
   "meta": {
     "source": "tesla-live",
-    "updatedAt": "2026-07-14T00:00:00.000Z",
-    "usingMock": false
+    "updatedAt": "2026-07-14T00:00:00.000Z"
   }
 }
 ```

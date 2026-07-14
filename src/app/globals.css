@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4efe6;
+  --foreground: #111111;
+  --panel: #18181b;
+  --panel-foreground: #f8fafc;
+  --muted: #8b9098;
+  --accent: #ff6f3c;
+  --accent-soft: rgba(255, 111, 60, 0.14);
+  --border: rgba(17, 24, 39, 0.08);
+  --glow: rgba(255, 161, 118, 0.3);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Avenir Next", "SF Pro Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "SFMono-Regular", "Menlo", "Consolas", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background:
+    radial-gradient(circle at top, rgba(255, 210, 183, 0.85), transparent 30%),
+    linear-gradient(180deg, #f8f2ea 0%, #efe6da 45%, #e5d8c8 100%);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: rgba(255, 111, 60, 0.2);
+}
+
+.ambient-shell {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.65), transparent 28%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.34));
+  backdrop-filter: blur(10px);
+}
+
+.display-board {
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 30%),
+    linear-gradient(180deg, #1f2025 0%, #121318 100%);
+  box-shadow:
+    0 24px 80px rgba(31, 26, 19, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.display-glow {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 18px 48px var(--glow);
+}
+
+.fine-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-position: center;
+  background-size: 18px 18px;
+}

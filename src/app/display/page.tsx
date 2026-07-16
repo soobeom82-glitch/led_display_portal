@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DisplayBoard } from "@/components/display-board";
 import { getDisplayPayload } from "@/lib/display";
 
@@ -10,6 +11,8 @@ export default async function DisplayPage({
     oauth?: string;
     error?: string;
     registered?: string;
+    wake?: string;
+    vehicle?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -30,6 +33,14 @@ export default async function DisplayPage({
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
             Tesla partner account registered. The app can now call Fleet API
             endpoints for this region.
+          </div>
+        ) : null}
+
+        {params.wake === "sent" ? (
+          <div className="rounded-2xl border border-sky-200 bg-sky-50/90 px-4 py-3 text-sm text-sky-800">
+            Wake request sent to {params.vehicle ?? "your Tesla"}. The vehicle
+            may take 10-60 seconds to come online, so refresh once after a
+            short wait.
           </div>
         ) : null}
 
@@ -66,6 +77,20 @@ export default async function DisplayPage({
                 Source:{" "}
                 <span className="font-mono">{payload.meta.source}</span>
               </p>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/api/tesla/wake?redirect=/display"
+                className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-white/15"
+              >
+                Wake Vehicle
+              </Link>
+              <Link
+                href="/display"
+                className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white/72 transition-transform hover:-translate-y-0.5 hover:bg-white/8"
+              >
+                Refresh View
+              </Link>
             </div>
           </aside>
         </div>

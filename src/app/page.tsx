@@ -101,6 +101,12 @@ export default async function Home() {
               >
                 View Display JSON
               </Link>
+              <Link
+                href="/api/tesla/wake?redirect=/display"
+                className="rounded-full border border-black/10 px-5 py-3 text-sm font-semibold text-black/70 transition-transform hover:-translate-y-0.5 hover:bg-white/60"
+              >
+                Wake Tesla
+              </Link>
             </div>
           </div>
 

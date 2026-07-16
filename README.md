@@ -24,6 +24,8 @@ ESP32 / Browser Display
   Authorization code를 refresh token으로 교환하고 저장
 - `/api/tesla/register`
   Tesla partner account one-time registration
+- `/api/tesla/wake`
+  절전 상태 차량을 수동으로 깨우는 endpoint
 - `/api/display`
   LED/브라우저 공용 JSON API
 - `/display`

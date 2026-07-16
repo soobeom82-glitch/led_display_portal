@@ -10,13 +10,20 @@ import type {
 import { refreshTeslaAccessToken } from "@/lib/tesla/oauth";
 import { readTeslaTokens, saveTeslaTokens } from "@/lib/tesla/token-store";
 
-async function fetchTeslaJson<T>(pathname: string, accessToken: string) {
+async function fetchTeslaJson<T>(
+  pathname: string,
+  accessToken: string,
+  init?: RequestInit,
+) {
   const env = getAppEnv();
   const response = await fetch(`${env.teslaApiBaseUrl}${pathname}`, {
+    method: init?.method,
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${accessToken}`,
+      ...(init?.headers ?? {}),
     },
+    body: init?.body,
     cache: "no-store",
   });
 
@@ -77,6 +84,25 @@ function pickVehicle(
   return vehicles[0] ?? null;
 }
 
+async function getTeslaVehicleSummary() {
+  const env = getAppEnv();
+  const accessToken = await getTeslaAccessToken();
+  const vehiclesEnvelope = await fetchTeslaJson<TeslaApiEnvelope<TeslaVehicleSummary[]>>(
+    "/api/1/vehicles",
+    accessToken,
+  );
+  const vehicle = pickVehicle(vehiclesEnvelope.response, env.teslaVehicleId);
+
+  if (!vehicle) {
+    throw new Error("Tesla account does not have any vehicles.");
+  }
+
+  return {
+    accessToken,
+    vehicle,
+  };
+}
+
 function toMinutesRemaining(hours: number | undefined) {
   if (hours === undefined || Number.isNaN(hours) || hours <= 0) {
     return null;
@@ -134,17 +160,7 @@ function buildVehicleFallback(vehicle: TeslaVehicleSummary): TeslaDisplayState {
 }
 
 export async function getTeslaDisplayState() {
-  const env = getAppEnv();
-  const accessToken = await getTeslaAccessToken();
-  const vehiclesEnvelope = await fetchTeslaJson<TeslaApiEnvelope<TeslaVehicleSummary[]>>(
-    "/api/1/vehicles",
-    accessToken,
-  );
-  const vehicle = pickVehicle(vehiclesEnvelope.response, env.teslaVehicleId);
-
-  if (!vehicle) {
-    throw new Error("Tesla account does not have any vehicles.");
-  }
+  const { accessToken, vehicle } = await getTeslaVehicleSummary();
 
   const vehicleIdentifier = vehicle.id_s ?? String(vehicle.id ?? "");
   if (!vehicleIdentifier) {
@@ -162,4 +178,28 @@ export async function getTeslaDisplayState() {
   } catch {
     return buildVehicleFallback(vehicle);
   }
+}
+
+export async function wakeTeslaVehicle() {
+  const { accessToken, vehicle } = await getTeslaVehicleSummary();
+  const vehicleVin = vehicle.vin?.trim();
+
+  if (!vehicleVin) {
+    throw new Error("Unable to determine a Tesla vehicle VIN for wake_up.");
+  }
+
+  const wakeResponse = await fetchTeslaJson<TeslaApiEnvelope<TeslaVehicleSummary>>(
+    `/api/1/vehicles/${vehicleVin}/wake_up`,
+    accessToken,
+    {
+      method: "POST",
+    },
+  );
+
+  return {
+    vehicleName:
+      wakeResponse.response.display_name ?? vehicle.display_name ?? "Tesla vehicle",
+    state: wakeResponse.response.state ?? vehicle.state ?? "unknown",
+    vin: vehicleVin,
+  };
 }

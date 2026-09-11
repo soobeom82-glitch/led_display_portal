@@ -10,6 +10,13 @@ export function formatMeetingCountdown(minutesUntil: number) {
 }
 
 export function compactMeetingLocation(location: string) {
+  const roomCodes = location.match(/\b[A-Z]\d+(?:-[A-Z]+\d+|[A-Z]+\d+)\b/gi);
+  const roomCode = roomCodes?.at(-1);
+
+  if (roomCode) {
+    return roomCode.toUpperCase();
+  }
+
   const parts = location.trim().split(/\s+/);
   const lastPart = parts.at(-1) ?? "";
   const normalized = lastPart

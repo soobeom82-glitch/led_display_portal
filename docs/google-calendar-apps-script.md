@@ -74,8 +74,8 @@ curl -s \
 Vercel은 `upcoming.events`에서 종일 일정과 이미 시작한 일정을 제외한 뒤 가장 가까운
 일정을 `calendar.nextMeeting`으로 계산한다. `minutesUntil`은 정수 분, `startsIn`은
 LED용 축약 문자열(`45m`, `1.5h`)이다. `location`은 Google Calendar 장소 문자열의
-마지막 토큰만 사용하므로 `판교아지트 7층 B7-R11`은 `B7-R11`로 표시된다. 원본 장소는
-`upcoming.events[].location`에 그대로 보존된다.
+회의실 코드 패턴을 찾아 사용하므로 `판교아지트 B동-7-lzone-B7-R11 (8)`은
+`B7-R11`로 표시된다. 원본 장소는 `upcoming.events[].location`에 그대로 보존된다.
 브라우저 미리보기의 카운트다운은 30초마다 화면에서만 다시 계산하며 Google 또는
 Vercel API를 반복 호출하지 않는다.
 

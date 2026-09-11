@@ -57,5 +57,9 @@ test("normalizes an empty location and short countdown", () => {
 test("shows only the final room token from a long location", () => {
   assert.equal(compactMeetingLocation("판교아지트 7층 B7-R11"), "B7-R11");
   assert.equal(compactMeetingLocation("판교아지트 / (B7RW1)"), "B7RW1");
+  assert.equal(
+    compactMeetingLocation("판교아지트 B동-7-lzone-B7-R11 (8)"),
+    "B7-R11",
+  );
   assert.equal(compactMeetingLocation(""), null);
 });

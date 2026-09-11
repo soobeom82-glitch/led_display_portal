@@ -42,6 +42,8 @@ Vercel KV -> Display API
   회사 계정 Apps Script가 기본 캘린더 스냅샷을 보내는 인증된 endpoint
 - `/display`
   LED 역할을 대신하는 브라우저 미리보기
+- `/meeting`
+  다음 회의까지 남은 시간과 회의실에 집중한 브라우저 LED 미리보기
 
 ## Environment
 
@@ -128,6 +130,15 @@ pnpm dev
       "end": "2026-09-18T01:00:00.000Z",
       "events": []
     },
+    "nextMeeting": {
+      "id": "meeting@example.com",
+      "title": "주간 회의",
+      "start": "2026-09-11T02:30:00.000Z",
+      "end": "2026-09-11T03:00:00.000Z",
+      "location": "B7RW1",
+      "minutesUntil": 90,
+      "startsIn": "1.5h"
+    },
     "source": "google-apps-script"
   },
   "meta": {
@@ -144,6 +155,10 @@ pnpm dev
 
 회사 Google Calendar 연동과 검증 절차는
 [`docs/google-calendar-apps-script.md`](docs/google-calendar-apps-script.md)를 따릅니다.
+
+`calendar.nextMeeting`은 종일 일정을 제외하고 시작 시각이 미래인 일정 중 가장
+가까운 하나입니다. `startsIn`과 `location`은 LED가 그대로 표시할 수 있는 값이며,
+브라우저 미리보기에서는 API 재조회 없이 로컬 타이머로 남은 시간만 갱신합니다.
 
 ## Suggested Next Steps
 

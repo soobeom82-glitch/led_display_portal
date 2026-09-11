@@ -71,6 +71,12 @@ curl -s \
 모든 시간은 전송 시 ISO 8601 UTC 형식으로 정규화되고, 표시할 때 `Asia/Seoul`로
 변환한다. 종일 일정은 `allDay: true`, 장소와 설명이 없으면 빈 문자열이다.
 
+Vercel은 `upcoming.events`에서 종일 일정과 이미 시작한 일정을 제외한 뒤 가장 가까운
+일정을 `calendar.nextMeeting`으로 계산한다. `minutesUntil`은 정수 분, `startsIn`은
+LED용 축약 문자열(`45m`, `1.5h`), `location`은 Google Calendar의 장소 값이다.
+브라우저 미리보기의 카운트다운은 30초마다 화면에서만 다시 계산하며 Google 또는
+Vercel API를 반복 호출하지 않는다.
+
 ## 기존 실패 방식과 차이
 
 기존 시도는 Google Calendar REST API를 Vercel에서 직접 호출하기 위해 별도의 OAuth

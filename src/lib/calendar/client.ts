@@ -1,5 +1,6 @@
 import "server-only";
 
+import { findNextMeeting } from "@/lib/calendar/next-meeting";
 import { readCalendarSnapshot } from "@/lib/calendar/store";
 import type { CalendarDisplayState } from "@/lib/types";
 
@@ -9,7 +10,9 @@ const EMPTY_RANGE = {
   events: [],
 };
 
-export async function getCalendarDisplayState(): Promise<CalendarDisplayState> {
+export async function getCalendarDisplayState(
+  now = new Date(),
+): Promise<CalendarDisplayState> {
   const snapshot = await readCalendarSnapshot();
 
   if (!snapshot) {
@@ -18,6 +21,7 @@ export async function getCalendarDisplayState(): Promise<CalendarDisplayState> {
       generatedAt: new Date(0).toISOString(),
       today: EMPTY_RANGE,
       upcoming: EMPTY_RANGE,
+      nextMeeting: null,
       source: "unavailable",
       message: "No Google Calendar snapshot has been synced yet.",
     };
@@ -28,6 +32,7 @@ export async function getCalendarDisplayState(): Promise<CalendarDisplayState> {
     generatedAt: snapshot.generatedAt,
     today: snapshot.today,
     upcoming: snapshot.upcoming,
+    nextMeeting: findNextMeeting(snapshot.upcoming.events, now),
     source: "google-apps-script",
   };
 }

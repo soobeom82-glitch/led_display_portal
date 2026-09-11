@@ -60,6 +60,13 @@ a {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+.meeting-board {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(34, 211, 238, 0.11), transparent 28%),
+    radial-gradient(circle at 82% 78%, rgba(251, 191, 36, 0.08), transparent 30%),
+    linear-gradient(155deg, #0a151b 0%, #080b10 58%, #110e0b 100%);
+}
+
 .display-glow {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 56px rgba(0, 0, 0, 0.4);
 }

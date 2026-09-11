@@ -92,6 +92,12 @@ export default async function Home() {
                 Open Browser Display
               </Link>
               <Link
+                href="/meeting"
+                className="rounded-full bg-cyan-950 px-5 py-3 text-sm font-semibold text-cyan-50 transition-transform hover:-translate-y-0.5"
+              >
+                Open Meeting Display
+              </Link>
+              <Link
                 href="/login"
                 className="rounded-full border border-black/10 bg-white/70 px-5 py-3 text-sm font-semibold text-black transition-transform hover:-translate-y-0.5"
               >

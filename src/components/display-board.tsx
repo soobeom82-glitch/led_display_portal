@@ -1,4 +1,5 @@
 import type { DisplayPayload } from "@/lib/types";
+import { MeetingCountdown } from "@/components/meeting-countdown";
 
 function formatEventTime(start: string, allDay: boolean, timezone: string) {
   if (allDay) {
@@ -57,10 +58,7 @@ function DetailRow({
 
 export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
   const tone = getStatusTone(payload);
-  const calendarEvents =
-    payload.calendar.today.events.length > 0
-      ? payload.calendar.today.events
-      : payload.calendar.upcoming.events;
+  const nextMeeting = payload.calendar.nextMeeting;
 
   return (
     <section
@@ -121,10 +119,10 @@ export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
         <DetailRow label="Source" value={payload.meta.source} />
       </div>
 
-      <div className="relative mt-4 rounded-[24px] border border-white/10 bg-white/[0.06] px-4 py-4 backdrop-blur-sm">
+      <div className="relative mt-4 overflow-hidden rounded-[24px] border border-cyan-300/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(255,255,255,0.04))] px-5 py-5 backdrop-blur-sm sm:px-6 sm:py-6">
         <div className="flex items-center justify-between gap-4">
           <p className="font-mono text-xs uppercase tracking-[0.22em] text-white/45">
-            Calendar
+            Next Meeting
           </p>
           <span className="font-mono text-[11px] text-white/40">
             {payload.calendar.source === "google-apps-script"
@@ -133,28 +131,44 @@ export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
           </span>
         </div>
 
-        {calendarEvents.length > 0 ? (
-          <div className="mt-3 space-y-2">
-            {calendarEvents.slice(0, 3).map((event) => (
-              <div
-                key={`${event.id}:${event.start}`}
-                className="flex items-baseline gap-3 border-t border-white/8 pt-2 text-sm"
-              >
-                <span className="w-12 shrink-0 font-mono text-amber-200">
-                  {formatEventTime(
-                    event.start,
-                    event.allDay,
-                    payload.calendar.timezone,
-                  )}
-                </span>
-                <span className="truncate text-white/88">{event.title}</span>
+        {nextMeeting ? (
+          <div className="mt-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/38">
+                  Starts in
+                </p>
+                <p className="mt-1 font-mono text-[2.8rem] font-semibold leading-none text-cyan-200 sm:text-[3.5rem]">
+                  <MeetingCountdown
+                    start={nextMeeting.start}
+                    initialLabel={nextMeeting.startsIn}
+                  />
+                </p>
               </div>
-            ))}
+              <div className="border-l border-white/10 pl-4">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/38">
+                  Room
+                </p>
+                <p className="mt-1 truncate font-mono text-[2.2rem] font-semibold leading-none text-amber-200 sm:text-[2.8rem]">
+                  {nextMeeting.location ?? "--"}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-4 border-t border-white/10 pt-3 text-sm">
+              <span className="truncate text-white/75">{nextMeeting.title}</span>
+              <span className="shrink-0 font-mono text-white/45">
+                {formatEventTime(
+                  nextMeeting.start,
+                  false,
+                  payload.calendar.timezone,
+                )}
+              </span>
+            </div>
           </div>
         ) : (
-          <p className="mt-3 text-sm text-white/50">
+          <p className="mt-5 text-sm text-white/50">
             {payload.calendar.source === "google-apps-script"
-              ? "조회 기간에 일정이 없습니다."
+              ? "향후 7일 안에 시간 지정 회의가 없습니다."
               : "Apps Script에서 syncCalendar를 실행하세요."}
           </p>
         )}

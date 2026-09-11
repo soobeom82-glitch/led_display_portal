@@ -74,6 +74,14 @@ export default async function Home() {
                 active={!payload.meta.message?.includes("must be registered")}
               />
               <StatusPill label="Browser refresh manual" active={true} />
+              <StatusPill
+                label={
+                  payload.calendar.source === "google-apps-script"
+                    ? "Google Calendar synced"
+                    : "Google Calendar pending"
+                }
+                active={payload.calendar.source === "google-apps-script"}
+              />
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -100,6 +108,12 @@ export default async function Home() {
                 className="rounded-full border border-black/10 px-5 py-3 text-sm font-semibold text-black/70 transition-transform hover:-translate-y-0.5 hover:bg-white/60"
               >
                 View Display JSON
+              </Link>
+              <Link
+                href="/api/calendar"
+                className="rounded-full border border-black/10 px-5 py-3 text-sm font-semibold text-black/70 transition-transform hover:-translate-y-0.5 hover:bg-white/60"
+              >
+                View Calendar JSON
               </Link>
               <Link
                 href="/api/tesla/wake?redirect=/display"
@@ -149,7 +163,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
         {[
           {
             title: "/login",
@@ -164,7 +178,12 @@ export default async function Home() {
           {
             title: "/api/display",
             description:
-              "ESP32와 브라우저가 함께 쓰는 단일 JSON API입니다. MVP 단계에서는 이 응답만 맞추면 됩니다.",
+              "ESP32와 브라우저가 함께 쓰는 단일 JSON API입니다. Tesla 상태와 동기화된 기본 캘린더 일정을 반환합니다.",
+          },
+          {
+            title: "/api/google/calendar/sync",
+            description:
+              "회사 계정의 Apps Script가 CalendarApp 결과를 읽기 전용 스냅샷으로 보내는 인증된 수신점입니다.",
           },
         ].map((item) => (
           <article

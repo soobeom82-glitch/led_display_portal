@@ -34,6 +34,8 @@ export function getAppEnv() {
     teslaAppDomain: process.env.TESLA_APP_DOMAIN?.trim() ?? "",
     teslaPublicKeyPem: publicKeyPem,
     displayApiKey: process.env.DISPLAY_API_KEY?.trim() ?? "",
+    googleCalendarSyncSecret:
+      process.env.GOOGLE_CALENDAR_SYNC_SECRET?.trim() ?? "",
     displayTimezone: process.env.DISPLAY_TIMEZONE?.trim() ?? "Asia/Seoul",
     displayPollSeconds: parseNumber(process.env.DISPLAY_POLL_SECONDS, 60),
     storageMode: (kvReady ? "kv" : "file") as StorageMode,

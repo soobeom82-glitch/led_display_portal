@@ -1,7 +1,12 @@
 import "server-only";
 
 import { getAppEnv } from "@/lib/env";
-import type { DisplayPayload, TeslaDisplayState } from "@/lib/types";
+import type {
+  CalendarDisplayState,
+  DisplayPayload,
+  TeslaDisplayState,
+} from "@/lib/types";
+import { getCalendarDisplayState } from "@/lib/calendar/client";
 import { getTeslaDisplayState } from "@/lib/tesla/client";
 
 function formatDisplayTime(date: Date, timezone: string) {
@@ -15,6 +20,7 @@ function formatDisplayTime(date: Date, timezone: string) {
 
 function createPayload(
   tesla: TeslaDisplayState,
+  calendar: CalendarDisplayState,
   message?: string,
 ): DisplayPayload {
   const env = getAppEnv();
@@ -24,6 +30,7 @@ function createPayload(
     time: formatDisplayTime(now, env.displayTimezone),
     timezone: env.displayTimezone,
     tesla,
+    calendar,
     meta: {
       source: tesla.source,
       updatedAt: now.toISOString(),
@@ -47,20 +54,30 @@ function getUnavailableTeslaState(status: string): TeslaDisplayState {
 
 export async function getDisplayPayload() {
   const env = getAppEnv();
+  const calendarPromise = getCalendarDisplayState();
 
   if (!env.isTeslaOauthConfigured && !env.teslaRefreshToken) {
     return createPayload(
       getUnavailableTeslaState("OAuth required"),
+      await calendarPromise,
       "Tesla OAuth is not configured yet. Add Tesla credentials and complete /login.",
     );
   }
 
   try {
-    return createPayload(await getTeslaDisplayState());
+    const [tesla, calendar] = await Promise.all([
+      getTeslaDisplayState(),
+      calendarPromise,
+    ]);
+    return createPayload(tesla, calendar);
   } catch (caughtError) {
     const message =
       caughtError instanceof Error ? caughtError.message : "Tesla data unavailable.";
 
-    return createPayload(getUnavailableTeslaState("Unavailable"), message);
+    return createPayload(
+      getUnavailableTeslaState("Unavailable"),
+      await calendarPromise,
+      message,
+    );
   }
 }

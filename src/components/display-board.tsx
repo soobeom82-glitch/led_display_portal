@@ -1,5 +1,18 @@
 import type { DisplayPayload } from "@/lib/types";
 
+function formatEventTime(start: string, allDay: boolean, timezone: string) {
+  if (allDay) {
+    return "종일";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: timezone,
+  }).format(new Date(start));
+}
+
 function getStatusTone(payload: DisplayPayload) {
   if (payload.tesla.complete) {
     return {
@@ -44,6 +57,10 @@ function DetailRow({
 
 export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
   const tone = getStatusTone(payload);
+  const calendarEvents =
+    payload.calendar.today.events.length > 0
+      ? payload.calendar.today.events
+      : payload.calendar.upcoming.events;
 
   return (
     <section
@@ -102,6 +119,45 @@ export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
           value={payload.tesla.vehicleName ?? "Unknown"}
         />
         <DetailRow label="Source" value={payload.meta.source} />
+      </div>
+
+      <div className="relative mt-4 rounded-[24px] border border-white/10 bg-white/[0.06] px-4 py-4 backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-4">
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-white/45">
+            Calendar
+          </p>
+          <span className="font-mono text-[11px] text-white/40">
+            {payload.calendar.source === "google-apps-script"
+              ? "Google / synced"
+              : "not synced"}
+          </span>
+        </div>
+
+        {calendarEvents.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            {calendarEvents.slice(0, 3).map((event) => (
+              <div
+                key={`${event.id}:${event.start}`}
+                className="flex items-baseline gap-3 border-t border-white/8 pt-2 text-sm"
+              >
+                <span className="w-12 shrink-0 font-mono text-amber-200">
+                  {formatEventTime(
+                    event.start,
+                    event.allDay,
+                    payload.calendar.timezone,
+                  )}
+                </span>
+                <span className="truncate text-white/88">{event.title}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-white/50">
+            {payload.calendar.source === "google-apps-script"
+              ? "조회 기간에 일정이 없습니다."
+              : "Apps Script에서 syncCalendar를 실행하세요."}
+          </p>
+        )}
       </div>
     </section>
   );

@@ -42,10 +42,39 @@ export interface TeslaDisplayState {
   source: "tesla-live" | "tesla-fallback";
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  allDay: boolean;
+  location: string;
+  description: string;
+}
+
+export interface CalendarEventRange {
+  start: string;
+  end: string;
+  events: CalendarEvent[];
+}
+
+export interface CalendarSyncPayload {
+  timezone: "Asia/Seoul";
+  generatedAt: string;
+  today: CalendarEventRange;
+  upcoming: CalendarEventRange;
+}
+
+export interface CalendarDisplayState extends CalendarSyncPayload {
+  source: "google-apps-script" | "unavailable";
+  message?: string;
+}
+
 export interface DisplayPayload {
   time: string;
   timezone: string;
   tesla: TeslaDisplayState;
+  calendar: CalendarDisplayState;
   meta: {
     source: TeslaDisplayState["source"];
     updatedAt: string;

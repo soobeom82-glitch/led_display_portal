@@ -2,7 +2,7 @@
 
 Tesla 차량 상태를 개인용 LED 디스플레이에 보여주기 위한 `Next.js + Vercel` MVP입니다.
 
-현재 버전은 아래 흐름만 구현합니다.
+현재 버전은 아래 흐름을 구현합니다.
 
 ```text
 Tesla Fleet API
@@ -12,6 +12,14 @@ Vercel (Next.js Route Handlers)
         |
         v
 ESP32 / Browser Display
+
+Google Calendar
+        |
+        v
+Apps Script (CalendarApp)
+        |
+        v
+Vercel KV -> Display API
 ```
 
 브라우저 미리보기는 [`/display`](/Users/KAKAO/Documents/LED display/src/app/display/page.tsx)에서 확인할 수 있고, 실제 ESP32는 [`/api/display`](/Users/KAKAO/Documents/LED display/src/app/api/display/route.ts) JSON만 읽으면 됩니다.
@@ -27,7 +35,11 @@ ESP32 / Browser Display
 - `/api/tesla/wake`
   절전 상태 차량을 수동으로 깨우는 endpoint
 - `/api/display`
-  LED/브라우저 공용 JSON API
+  LED/브라우저 공용 Tesla + Calendar JSON API
+- `/api/calendar`
+  동기화된 기본 캘린더의 오늘/향후 7일 JSON API
+- `/api/google/calendar/sync`
+  회사 계정 Apps Script가 기본 캘린더 스냅샷을 보내는 인증된 endpoint
 - `/display`
   LED 역할을 대신하는 브라우저 미리보기
 
@@ -47,6 +59,8 @@ cp .env.example .env.local
 - `TESLA_PUBLIC_KEY_PEM`
 - `TESLA_VEHICLE_ID` (선택)
 - `DISPLAY_API_KEY` (권장)
+- `GOOGLE_CALENDAR_SYNC_SECRET`
+  Apps Script와 Vercel 사이에서만 사용하는 동기화 비밀값
 
 선택 변수:
 
@@ -101,6 +115,21 @@ pnpm dev
     "vehicleName": "Model Y",
     "source": "tesla-live"
   },
+  "calendar": {
+    "timezone": "Asia/Seoul",
+    "generatedAt": "2026-09-11T01:00:00.000Z",
+    "today": {
+      "start": "2026-09-10T15:00:00.000Z",
+      "end": "2026-09-11T15:00:00.000Z",
+      "events": []
+    },
+    "upcoming": {
+      "start": "2026-09-11T01:00:00.000Z",
+      "end": "2026-09-18T01:00:00.000Z",
+      "events": []
+    },
+    "source": "google-apps-script"
+  },
   "meta": {
     "source": "tesla-live",
     "updatedAt": "2026-07-14T00:00:00.000Z"
@@ -113,8 +142,11 @@ pnpm dev
 - `x-display-key: <key>` 헤더
 - `GET /api/display?key=<key>`
 
+회사 Google Calendar 연동과 검증 절차는
+[`docs/google-calendar-apps-script.md`](docs/google-calendar-apps-script.md)를 따릅니다.
+
 ## Suggested Next Steps
 
 1. Tesla Fleet API 실차 응답을 확인하면서 `charge_state` 매핑을 보정합니다.
 2. ESP32에서 `/api/display`를 필요한 주기로 호출하고 동일한 3줄 레이아웃으로 렌더링합니다.
-3. 이후 `calendar`, `weather`, `freezer` 블록을 같은 JSON 루트에 확장합니다.
+3. 이후 `weather`, `freezer` 블록을 같은 JSON 루트에 확장합니다.

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { findMeetingAlert } from "@/lib/calendar/next-meeting";
 import type { CalendarDisplayState } from "@/lib/types";
 
 export function MeetingBoard({ calendar }: { calendar: CalendarDisplayState }) {
+  const router = useRouter();
   const events = calendar.upcoming.events;
   const [meeting, setMeeting] = useState(calendar.meeting);
 
@@ -15,6 +17,11 @@ export function MeetingBoard({ calendar }: { calendar: CalendarDisplayState }) {
     const intervalId = window.setInterval(updateMeeting, 30_000);
     return () => window.clearInterval(intervalId);
   }, [events]);
+
+  useEffect(() => {
+    const refreshId = window.setInterval(() => router.refresh(), 60_000);
+    return () => window.clearInterval(refreshId);
+  }, [router]);
 
   return (
     <section className="meeting-board relative flex min-h-[620px] w-full max-w-3xl flex-col overflow-hidden rounded-[36px] border border-white/10 p-6 text-white shadow-[0_32px_100px_rgba(0,0,0,0.58)] sm:min-h-[680px] sm:p-10">

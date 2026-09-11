@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  compactMeetingLocation,
   findNextMeeting,
   formatMeetingCountdown,
 } from "./next-meeting.ts";
@@ -51,4 +52,10 @@ test("normalizes an empty location and short countdown", () => {
   assert.equal(result?.startsIn, "45m");
   assert.equal(result?.location, null);
   assert.equal(formatMeetingCountdown(60), "1h");
+});
+
+test("shows only the final room token from a long location", () => {
+  assert.equal(compactMeetingLocation("판교아지트 7층 B7-R11"), "B7-R11");
+  assert.equal(compactMeetingLocation("판교아지트 / (B7RW1)"), "B7RW1");
+  assert.equal(compactMeetingLocation(""), null);
 });

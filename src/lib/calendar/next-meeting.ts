@@ -9,6 +9,16 @@ export function formatMeetingCountdown(minutesUntil: number) {
   return `${Number.isInteger(hours) ? hours.toFixed(0) : hours.toFixed(1)}h`;
 }
 
+export function compactMeetingLocation(location: string) {
+  const parts = location.trim().split(/\s+/);
+  const lastPart = parts.at(-1) ?? "";
+  const normalized = lastPart
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .replace(/[^\p{L}\p{N}]+$/u, "");
+
+  return normalized || null;
+}
+
 export function findNextMeeting(
   events: CalendarEvent[],
   now: Date,
@@ -32,7 +42,7 @@ export function findNextMeeting(
     title: meeting.title,
     start: meeting.start,
     end: meeting.end,
-    location: meeting.location.trim() || null,
+    location: compactMeetingLocation(meeting.location),
     minutesUntil,
     startsIn: formatMeetingCountdown(minutesUntil),
   };

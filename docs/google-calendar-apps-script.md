@@ -71,13 +71,16 @@ curl -s \
 모든 시간은 전송 시 ISO 8601 UTC 형식으로 정규화되고, 표시할 때 `Asia/Seoul`로
 변환한다. 종일 일정은 `allDay: true`, 장소와 설명이 없으면 빈 문자열이다.
 
-Vercel은 `upcoming.events`에서 종일 일정과 이미 시작한 일정을 제외한 뒤 가장 가까운
-일정을 `calendar.nextMeeting`으로 계산한다. `minutesUntil`은 정수 분, `startsIn`은
-LED용 축약 문자열(`45m`, `1.5h`)이다. `location`은 Google Calendar 장소 문자열의
-회의실 코드 패턴을 찾아 사용하므로 `판교아지트 B동-7-lzone-B7-R11 (8)`은
-`B7-R11`로 표시된다. 원본 장소는 `upcoming.events[].location`에 그대로 보존된다.
-브라우저 미리보기의 카운트다운은 30초마다 화면에서만 다시 계산하며 Google 또는
-Vercel API를 반복 호출하지 않는다.
+Vercel은 `upcoming.events`에서 종일 일정을 제외하고 `calendar.meeting` 표시 상태를
+계산한다. 다음 회의 30분 전부터는 `phase: upcoming`과 정수 `minutesUntil`, 회의실을
+제공하고, 회의가 시작되면 `phase: in-progress`, `minutesUntil: null`로 회의실만
+제공한다. 진행 중인 회의가 있어도 다른 회의가 30분 안에 시작하면 다음 회의를 우선한다.
+그 외 시간에는 `meeting: null`이다.
+
+`location`은 Google Calendar 장소 문자열의 회의실 코드 패턴을 찾아 사용하므로
+`판교아지트 B동-7-lzone-B7-R11 (8)`은 `B7-R11`로 표시된다. 원본 장소는
+`upcoming.events[].location`에 그대로 보존된다. 브라우저 미리보기는 30초마다 저장된
+일정으로 상태를 다시 계산하며 Google 또는 Vercel API를 반복 호출하지 않는다.
 
 ## 기존 실패 방식과 차이
 

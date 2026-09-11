@@ -65,18 +65,17 @@ export interface CalendarSyncPayload {
   upcoming: CalendarEventRange;
 }
 
-export interface CalendarNextMeeting {
+export interface CalendarMeetingAlert {
   id: string;
-  title: string;
   start: string;
   end: string;
   location: string | null;
-  minutesUntil: number;
-  startsIn: string;
+  phase: "upcoming" | "in-progress";
+  minutesUntil: number | null;
 }
 
 export interface CalendarDisplayState extends CalendarSyncPayload {
-  nextMeeting: CalendarNextMeeting | null;
+  meeting: CalendarMeetingAlert | null;
   source: "google-apps-script" | "unavailable";
   message?: string;
 }

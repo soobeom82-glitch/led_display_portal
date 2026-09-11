@@ -130,14 +130,13 @@ pnpm dev
       "end": "2026-09-18T01:00:00.000Z",
       "events": []
     },
-    "nextMeeting": {
+    "meeting": {
       "id": "meeting@example.com",
-      "title": "주간 회의",
       "start": "2026-09-11T02:30:00.000Z",
       "end": "2026-09-11T03:00:00.000Z",
       "location": "B7RW1",
-      "minutesUntil": 90,
-      "startsIn": "1.5h"
+      "phase": "upcoming",
+      "minutesUntil": 30
     },
     "source": "google-apps-script"
   },
@@ -156,9 +155,10 @@ pnpm dev
 회사 Google Calendar 연동과 검증 절차는
 [`docs/google-calendar-apps-script.md`](docs/google-calendar-apps-script.md)를 따릅니다.
 
-`calendar.nextMeeting`은 종일 일정을 제외하고 시작 시각이 미래인 일정 중 가장
-가까운 하나입니다. `startsIn`과 `location`은 LED가 그대로 표시할 수 있는 값이며,
-브라우저 미리보기에서는 API 재조회 없이 로컬 타이머로 남은 시간만 갱신합니다.
+`calendar.meeting`은 다음 회의 30분 전부터 `upcoming` 상태로 남은 분과 회의실을
+제공합니다. 회의 중에는 `in-progress` 상태로 회의실만 제공하며, 다음 회의가 30분
+이내라면 진행 중인 회의보다 다음 회의를 우선합니다. 그 외 시간에는 `null`입니다.
+브라우저 미리보기는 API 재조회 없이 저장된 일정으로 30초마다 상태를 다시 계산합니다.
 
 ## Suggested Next Steps
 

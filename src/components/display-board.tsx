@@ -1,18 +1,4 @@
 import type { DisplayPayload } from "@/lib/types";
-import { MeetingCountdown } from "@/components/meeting-countdown";
-
-function formatEventTime(start: string, allDay: boolean, timezone: string) {
-  if (allDay) {
-    return "종일";
-  }
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: timezone,
-  }).format(new Date(start));
-}
 
 function getStatusTone(payload: DisplayPayload) {
   if (payload.tesla.complete) {
@@ -58,7 +44,7 @@ function DetailRow({
 
 export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
   const tone = getStatusTone(payload);
-  const nextMeeting = payload.calendar.nextMeeting;
+  const meeting = payload.calendar.meeting;
 
   return (
     <section
@@ -119,30 +105,16 @@ export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
         <DetailRow label="Source" value={payload.meta.source} />
       </div>
 
-      <div className="relative mt-4 overflow-hidden rounded-[24px] border border-cyan-300/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(255,255,255,0.04))] px-5 py-5 backdrop-blur-sm sm:px-6 sm:py-6">
-        <div className="flex items-center justify-between gap-4">
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-white/45">
-            Next Meeting
-          </p>
-          <span className="font-mono text-[11px] text-white/40">
-            {payload.calendar.source === "google-apps-script"
-              ? "Google / synced"
-              : "not synced"}
-          </span>
-        </div>
-
-        {nextMeeting ? (
-          <div className="mt-5">
+      {meeting ? (
+        <div className="relative mt-4 overflow-hidden rounded-[24px] border border-cyan-300/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(255,255,255,0.04))] px-5 py-5 backdrop-blur-sm sm:px-6 sm:py-6">
+          {meeting.phase === "upcoming" ? (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/38">
                   Starts in
                 </p>
                 <p className="mt-1 font-mono text-[2.8rem] font-semibold leading-none text-cyan-200 sm:text-[3.5rem]">
-                  <MeetingCountdown
-                    start={nextMeeting.start}
-                    initialLabel={nextMeeting.startsIn}
-                  />
+                  {meeting.minutesUntil}m
                 </p>
               </div>
               <div className="border-l border-white/10 pl-4">
@@ -150,29 +122,22 @@ export function DisplayBoard({ payload }: { payload: DisplayPayload }) {
                   Room
                 </p>
                 <p className="mt-1 truncate font-mono text-[2.2rem] font-semibold leading-none text-amber-200 sm:text-[2.8rem]">
-                  {nextMeeting.location ?? "--"}
+                  {meeting.location ?? "--"}
                 </p>
               </div>
             </div>
-            <div className="mt-5 flex items-center justify-between gap-4 border-t border-white/10 pt-3 text-sm">
-              <span className="truncate text-white/75">{nextMeeting.title}</span>
-              <span className="shrink-0 font-mono text-white/45">
-                {formatEventTime(
-                  nextMeeting.start,
-                  false,
-                  payload.calendar.timezone,
-                )}
-              </span>
+          ) : (
+            <div className="py-2 text-center">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/38">
+                Room
+              </p>
+              <p className="mt-2 truncate font-mono text-[3rem] font-semibold leading-none text-amber-200 sm:text-[3.8rem]">
+                {meeting.location ?? "--"}
+              </p>
             </div>
-          </div>
-        ) : (
-          <p className="mt-5 text-sm text-white/50">
-            {payload.calendar.source === "google-apps-script"
-              ? "향후 7일 안에 시간 지정 회의가 없습니다."
-              : "Apps Script에서 syncCalendar를 실행하세요."}
-          </p>
-        )}
-      </div>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

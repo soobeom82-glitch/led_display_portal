@@ -1,13 +1,6 @@
-import type { CalendarEvent, CalendarNextMeeting } from "@/lib/types";
+import type { CalendarEvent, CalendarMeetingAlert } from "@/lib/types";
 
-export function formatMeetingCountdown(minutesUntil: number) {
-  if (minutesUntil < 60) {
-    return `${minutesUntil}m`;
-  }
-
-  const hours = Math.ceil(minutesUntil / 6) / 10;
-  return `${Number.isInteger(hours) ? hours.toFixed(0) : hours.toFixed(1)}h`;
-}
+const UPCOMING_WINDOW_MINUTES = 30;
 
 export function compactMeetingLocation(location: string) {
   const roomCodes = location.match(/\b[A-Z]\d+(?:-[A-Z]+\d+|[A-Z]+\d+)\b/gi);
@@ -26,31 +19,52 @@ export function compactMeetingLocation(location: string) {
   return normalized || null;
 }
 
-export function findNextMeeting(
+export function findMeetingAlert(
   events: CalendarEvent[],
   now: Date,
-): CalendarNextMeeting | null {
+): CalendarMeetingAlert | null {
   const nowTimestamp = now.getTime();
-  const meeting = events
+  const upcoming = events
     .filter((event) => !event.allDay && Date.parse(event.start) > nowTimestamp)
     .sort((left, right) => left.start.localeCompare(right.start))[0];
 
-  if (!meeting) {
+  if (upcoming) {
+    const minutesUntil = Math.max(
+      1,
+      Math.ceil((Date.parse(upcoming.start) - nowTimestamp) / 60_000),
+    );
+
+    if (minutesUntil <= UPCOMING_WINDOW_MINUTES) {
+      return {
+        id: upcoming.id,
+        start: upcoming.start,
+        end: upcoming.end,
+        location: compactMeetingLocation(upcoming.location),
+        phase: "upcoming",
+        minutesUntil,
+      };
+    }
+  }
+
+  const inProgress = events
+    .filter(
+      (event) =>
+        !event.allDay &&
+        Date.parse(event.start) <= nowTimestamp &&
+        Date.parse(event.end) > nowTimestamp,
+    )
+    .sort((left, right) => right.start.localeCompare(left.start))[0];
+
+  if (!inProgress) {
     return null;
   }
 
-  const minutesUntil = Math.max(
-    1,
-    Math.ceil((Date.parse(meeting.start) - nowTimestamp) / 60_000),
-  );
-
   return {
-    id: meeting.id,
-    title: meeting.title,
-    start: meeting.start,
-    end: meeting.end,
-    location: compactMeetingLocation(meeting.location),
-    minutesUntil,
-    startsIn: formatMeetingCountdown(minutesUntil),
+    id: inProgress.id,
+    start: inProgress.start,
+    end: inProgress.end,
+    location: compactMeetingLocation(inProgress.location),
+    phase: "in-progress",
+    minutesUntil: null,
   };
 }

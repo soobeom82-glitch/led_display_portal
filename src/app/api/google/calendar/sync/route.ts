@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       counts: {
         today: snapshot.today.events.length,
         upcoming: snapshot.upcoming.events.length,
+        browsing: snapshot.browsing?.events.length ?? 0,
       },
     });
   } catch {

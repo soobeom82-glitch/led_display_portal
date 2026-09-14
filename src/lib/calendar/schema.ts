@@ -111,5 +111,9 @@ export function parseCalendarSyncPayload(value: unknown): CalendarSyncPayload {
     generatedAt: asIsoDate(payload.generatedAt, "generatedAt"),
     today: parseRange(payload.today, "today"),
     upcoming: parseRange(payload.upcoming, "upcoming"),
+    browsing:
+      payload.browsing === undefined
+        ? undefined
+        : parseRange(payload.browsing, "browsing"),
   };
 }

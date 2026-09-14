@@ -16,19 +16,36 @@ const meetingTimeFormatter = new Intl.DateTimeFormat("en-GB", {
   hour12: false,
 });
 
+const meetingDateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "Asia/Seoul",
+  weekday: "short",
+  month: "short",
+  day: "2-digit",
+});
+
+const DAY_LABELS = ["Yesterday", "Today", "Tomorrow"] as const;
+
+interface MeetingDay {
+  start: string;
+  events: MeetingTiming[];
+}
+
 interface MeetingBoardProps {
   initialNow: string;
-  todayEvents: MeetingTiming[];
+  meetingDays: MeetingDay[];
 }
 
 export function MeetingBoard({
   initialNow,
-  todayEvents,
+  meetingDays,
 }: MeetingBoardProps) {
   const router = useRouter();
-  const todayMeetings = getMeetingSchedule(todayEvents);
   const [now, setNow] = useState(() => new Date(initialNow));
-  const nextMeeting = findNextMeetingSchedule(todayEvents, now);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(1);
+  const selectedDay = meetingDays[selectedDayIndex] ?? meetingDays[1];
+  const selectedMeetings = getMeetingSchedule(selectedDay?.events ?? []);
+  const allEvents = meetingDays.flatMap((day) => day.events);
+  const nextMeeting = findNextMeetingSchedule(allEvents, now);
   const countdownMinutes =
     nextMeeting && nextMeeting.minutesUntil <= UPCOMING_WINDOW_MINUTES
       ? nextMeeting.minutesUntil
@@ -53,25 +70,57 @@ export function MeetingBoard({
       </div>
 
       <div className="relative flex flex-1 flex-col">
-        <div className="flex items-end justify-between border-b border-white/12 pb-4">
-          <p className="font-mono text-xs uppercase tracking-[0.28em] text-cyan-200/70">
-            Today
-          </p>
+        <div className="flex items-center justify-between border-b border-white/12 pb-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button
+              type="button"
+              aria-label="Previous day"
+              disabled={selectedDayIndex === 0}
+              onClick={() => setSelectedDayIndex((index) => Math.max(0, index - 1))}
+              className="flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/5 font-mono text-3xl leading-none text-cyan-100 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-20 sm:size-13"
+            >
+              ‹
+            </button>
+            <div className="min-w-28 sm:min-w-36">
+              <p className="font-mono text-xs uppercase tracking-[0.28em] text-cyan-200/80 sm:text-sm">
+                {DAY_LABELS[selectedDayIndex]}
+              </p>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-white/42 sm:text-xs">
+                {selectedDay
+                  ? meetingDateFormatter.format(new Date(selectedDay.start))
+                  : "--"}
+              </p>
+            </div>
+            <button
+              type="button"
+              aria-label="Next day"
+              disabled={selectedDayIndex === meetingDays.length - 1}
+              onClick={() =>
+                setSelectedDayIndex((index) =>
+                  Math.min(meetingDays.length - 1, index + 1),
+                )
+              }
+              className="flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/5 font-mono text-3xl leading-none text-cyan-100 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-20 sm:size-13"
+            >
+              ›
+            </button>
+          </div>
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/65 sm:text-xs">
             Time / Room
           </p>
         </div>
 
-        {todayMeetings.length > 0 ? (
+        {selectedMeetings.length > 0 ? (
           <div className="flex flex-1 flex-col gap-2 overflow-y-auto py-3 sm:gap-3">
-            {todayMeetings.map((todayMeeting) => {
-              const isNextMeeting = nextMeeting?.id === todayMeeting.id &&
-                nextMeeting.start === todayMeeting.start;
-              const hasEnded = Date.parse(todayMeeting.end) <= now.getTime();
+            {selectedMeetings.map((meeting) => {
+              const isNextMeeting =
+                nextMeeting?.id === meeting.id &&
+                nextMeeting.start === meeting.start;
+              const hasEnded = Date.parse(meeting.end) <= now.getTime();
 
               return (
                 <div
-                  key={`${todayMeeting.id}-${todayMeeting.start}`}
+                  key={`${meeting.id}-${meeting.start}`}
                   className={`grid grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] items-center gap-5 sm:gap-10 ${
                     isNextMeeting
                       ? "px-2 py-6 sm:px-3 sm:py-8"
@@ -88,9 +137,9 @@ export function MeetingBoard({
                           : "text-2xl sm:text-3xl"
                       }`}
                     >
-                      {meetingTimeFormatter.format(new Date(todayMeeting.start))}
+                      {meetingTimeFormatter.format(new Date(meeting.start))}
                       <span className="mx-2 text-white/20">-</span>
-                      {meetingTimeFormatter.format(new Date(todayMeeting.end))}
+                      {meetingTimeFormatter.format(new Date(meeting.end))}
                       {isNextMeeting && countdownMinutes !== null ? (
                         <span
                           className={`ml-3 inline-flex items-start gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
@@ -128,7 +177,7 @@ export function MeetingBoard({
                         : "text-3xl sm:text-4xl"
                     }`}
                   >
-                    {todayMeeting.location ?? "--"}
+                    {meeting.location ?? "--"}
                   </p>
                 </div>
               );
@@ -137,7 +186,7 @@ export function MeetingBoard({
         ) : (
           <div className="flex flex-1 items-center justify-center">
             <p className="font-mono text-2xl text-white/32 sm:text-4xl">
-              No meetings today
+              No meetings
             </p>
           </div>
         )}

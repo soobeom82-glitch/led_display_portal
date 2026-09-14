@@ -1,6 +1,6 @@
 import { MeetingBoard } from "@/components/meeting-board";
 import { getCalendarDisplayState } from "@/lib/calendar/client";
-import type { CalendarEvent } from "@/lib/types";
+import type { CalendarDisplayState, CalendarEvent } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,42 @@ function toMeetingTiming(event: CalendarEvent) {
     allDay: event.allDay,
     location: event.location,
   };
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function getSeoulDayStart(now: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "01";
+
+  return Date.parse(
+    `${getPart("year")}-${getPart("month")}-${getPart("day")}T00:00:00+09:00`,
+  );
+}
+
+function buildMeetingDays(calendar: CalendarDisplayState, now: Date) {
+  const todayStart = getSeoulDayStart(now);
+
+  return [-1, 0, 1].map((offset) => {
+    const start = todayStart + offset * DAY_MS;
+    const end = start + DAY_MS;
+
+    return {
+      start: new Date(start).toISOString(),
+      events: calendar.browsing.events
+        .filter(
+          (event) =>
+            Date.parse(event.start) < end && Date.parse(event.end) > start,
+        )
+        .map(toMeetingTiming),
+    };
+  });
 }
 
 function formatSnapshotTime(value: string) {
@@ -36,8 +72,10 @@ function formatSnapshotTime(value: string) {
 
 export default async function MeetingPage() {
   const calendar = await getCalendarDisplayState();
-  const initialNow = new Date().toISOString();
+  const now = new Date();
+  const initialNow = now.toISOString();
   const snapshotTime = formatSnapshotTime(calendar.syncedAt);
+  const meetingDays = buildMeetingDays(calendar, now);
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
@@ -45,7 +83,7 @@ export default async function MeetingPage() {
       <div className="relative flex w-full max-w-5xl flex-col gap-4">
         <MeetingBoard
           initialNow={initialNow}
-          todayEvents={calendar.today.events.map(toMeetingTiming)}
+          meetingDays={meetingDays}
         />
         <div className="flex justify-end px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/35 sm:text-xs">
           <p>

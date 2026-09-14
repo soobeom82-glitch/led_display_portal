@@ -30,11 +30,13 @@ function getCalendarEvents(start, end) {
 function syncCalendar() {
   const todayRange = getTodayRange_();
   const upcomingRange = getUpcomingRange_();
+  const browsingRange = getBrowsingRange_();
   const payload = {
     timezone: CALENDAR_TIMEZONE,
     generatedAt: new Date().toISOString(),
     today: buildRange_(todayRange.start, todayRange.end),
-    upcoming: buildRange_(upcomingRange.start, upcomingRange.end)
+    upcoming: buildRange_(upcomingRange.start, upcomingRange.end),
+    browsing: buildRange_(browsingRange.start, browsingRange.end)
   };
 
   const response = UrlFetchApp.fetch(
@@ -57,9 +59,10 @@ function syncCalendar() {
 
   const result = JSON.parse(response.getContentText());
   console.log(
-    'Calendar sync complete. today=%s upcoming=%s',
+    'Calendar sync complete. today=%s upcoming=%s browsing=%s',
     result.counts.today,
-    result.counts.upcoming
+    result.counts.upcoming,
+    result.counts.browsing
   );
   return result;
 }
@@ -166,6 +169,15 @@ function getUpcomingRange_() {
   const end = new Date(start.getTime());
   end.setDate(end.getDate() + UPCOMING_DAYS);
   return { start: start, end: end };
+}
+
+function getBrowsingRange_() {
+  const now = new Date();
+  const date = Utilities.formatDate(now, CALENDAR_TIMEZONE, 'yyyy-MM-dd');
+  return {
+    start: parseSeoulDate_(addDaysToDateString_(date, -1)),
+    end: parseSeoulDate_(addDaysToDateString_(date, 2))
+  };
 }
 
 function parseSeoulDate_(date) {

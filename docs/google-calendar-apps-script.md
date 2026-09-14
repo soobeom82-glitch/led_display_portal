@@ -54,6 +54,10 @@ GOOGLE_CALENDAR_SYNC_SECRET=<CALENDAR_SYNC_SECRET과 동일한 값>
 동기화 중지는 `removeCalendarSyncTrigger`를 수동 실행해 확인하거나 변경할 수 있다.
 설치형 트리거는 이를 생성한 회사 계정의 권한으로 실행된다.
 
+이미 트리거가 설치된 뒤 `Code.gs`를 갱신했다면 트리거를 다시 만들 필요는 없다. 저장된
+최신 코드가 다음 5분 실행부터 사용된다. 3일 탐색 데이터를 즉시 채우려면
+`syncCalendar`를 한 번 수동 실행한다.
+
 ## 확인
 
 `DISPLAY_API_KEY`가 설정되어 있다면 다음처럼 확인한다.
@@ -69,9 +73,10 @@ curl -s \
 ```
 
 `today.events`에는 오늘 0시부터 다음 날 0시까지 겹치는 일정이, `upcoming.events`에는
-실행 시각부터 7일 뒤까지의 일정이 시작시간 순서로 들어간다. 반복 일정은 조회 범위에
-나타난 각 인스턴스로 반환되며 동일한 Calendar 이벤트 ID를 가질 수 있으므로 화면 key는
-`id + start` 조합을 사용한다.
+실행 시각부터 7일 뒤까지의 일정이 시작시간 순서로 들어간다. `browsing.events`에는
+한국 시간 기준 어제 0시부터 모레 0시 직전까지 겹치는 일정이 들어가므로 화면에서
+어제·오늘·내일을 탐색할 수 있다. 반복 일정은 조회 범위에 나타난 각 인스턴스로 반환되며
+동일한 Calendar 이벤트 ID를 가질 수 있으므로 화면 key는 `id + start` 조합을 사용한다.
 
 모든 시간은 전송 시 ISO 8601 UTC 형식으로 정규화되고, 표시할 때 `Asia/Seoul`로
 변환한다. 종일 일정은 `allDay: true`, 장소와 설명이 없으면 빈 문자열이다.
@@ -84,11 +89,12 @@ Vercel은 `upcoming.events`에서 종일 일정을 제외하고 `calendar.meetin
 
 `location`은 Google Calendar 장소 문자열의 회의실 코드 패턴을 찾아 사용하므로
 `판교아지트 B동-7-lzone-B7-R11 (8)`은 `B7-R11`로 표시된다. 원본 장소는
-`upcoming.events[].location`에 그대로 보존된다. `/meeting` 브라우저 미리보기는 오늘의
-시간 지정 일정을 목록으로 유지하면서 다음 회의를 크게 강조하고, 30분 전부터 남은 분을
-표시한다. 화면 상태는 30초마다 계산하고 1분마다 Vercel KV의 최신 스냅샷을 다시 받는다.
-이 웹 갱신은 Google Calendar를 직접 호출하지 않는다. 화면 우측 하단의
-`LAST SNAPSHOT`은 Vercel이 스냅샷을 받아 KV에 저장한 서울 시각이다.
+`upcoming.events[].location`에 그대로 보존된다. `/meeting` 브라우저 미리보기는
+이전·다음 버튼으로 어제·오늘·내일의 시간 지정 일정을 탐색할 수 있으며, 실제 다음 회의를
+크게 강조하고 30분 전부터 남은 분을 표시한다. 화면 상태는 30초마다 계산하고 1분마다
+Vercel KV의 최신 스냅샷을 다시 받는다. 이 웹 갱신은 Google Calendar를 직접 호출하지
+않는다. 화면 우측 하단의 `LAST SNAPSHOT`은 Vercel이 스냅샷을 받아 KV에 저장한 서울
+시각이다.
 
 ## 기존 실패 방식과 차이
 

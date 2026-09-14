@@ -15,6 +15,11 @@ const basePayload = {
     end: "2026-09-18T01:00:00.000Z",
     events: [],
   },
+  browsing: {
+    start: "2026-09-09T15:00:00.000Z",
+    end: "2026-09-12T15:00:00.000Z",
+    events: [],
+  },
 };
 
 test("accepts an empty day and preserves the Seoul timezone", () => {
@@ -22,6 +27,15 @@ test("accepts an empty day and preserves the Seoul timezone", () => {
 
   assert.equal(parsed.timezone, "Asia/Seoul");
   assert.deepEqual(parsed.today.events, []);
+  assert.deepEqual(parsed.browsing?.events, []);
+});
+
+test("accepts snapshots created before the browsing range was added", () => {
+  const legacyPayload: Record<string, unknown> = { ...basePayload };
+  delete legacyPayload.browsing;
+  const parsed = parseCalendarSyncPayload(legacyPayload);
+
+  assert.equal(parsed.browsing, undefined);
 });
 
 test("normalizes Korean, timed, all-day, recurring, and optional fields", () => {

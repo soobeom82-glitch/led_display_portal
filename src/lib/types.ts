@@ -63,6 +63,7 @@ export interface CalendarSyncPayload {
   generatedAt: string;
   today: CalendarEventRange;
   upcoming: CalendarEventRange;
+  browsing?: CalendarEventRange;
 }
 
 export interface CalendarMeetingAlert {
@@ -76,6 +77,7 @@ export interface CalendarMeetingAlert {
 
 export interface CalendarDisplayState extends CalendarSyncPayload {
   syncedAt: string;
+  browsing: CalendarEventRange;
   meeting: CalendarMeetingAlert | null;
   source: "google-apps-script" | "unavailable";
   message?: string;

@@ -22,6 +22,7 @@ export async function getCalendarDisplayState(
       syncedAt: new Date(0).toISOString(),
       today: EMPTY_RANGE,
       upcoming: EMPTY_RANGE,
+      browsing: EMPTY_RANGE,
       meeting: null,
       source: "unavailable",
       message: "No Google Calendar snapshot has been synced yet.",
@@ -34,6 +35,7 @@ export async function getCalendarDisplayState(
     syncedAt: snapshot.storedAt,
     today: snapshot.today,
     upcoming: snapshot.upcoming,
+    browsing: snapshot.browsing ?? snapshot.today,
     meeting: findMeetingAlert(snapshot.upcoming.events, now),
     source: "google-apps-script",
   };

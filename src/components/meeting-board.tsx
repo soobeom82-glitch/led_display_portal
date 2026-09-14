@@ -52,7 +52,7 @@ export function MeetingBoard({
           <p className="font-mono text-xs uppercase tracking-[0.28em] text-cyan-200/70">
             Today
           </p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 sm:text-xs">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/65 sm:text-xs">
             Time / Room
           </p>
         </div>

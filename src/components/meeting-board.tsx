@@ -30,6 +30,10 @@ export function MeetingBoard({
   const router = useRouter();
   const todayMeetings = getMeetingSchedule(todayEvents);
   const [meeting, setMeeting] = useState(initialMeeting);
+  const isUrgentCountdown =
+    meeting?.phase === "upcoming" &&
+    meeting.minutesUntil !== null &&
+    meeting.minutesUntil <= 3;
 
   useEffect(() => {
     const updateMeeting = () =>
@@ -59,7 +63,13 @@ export function MeetingBoard({
                 <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-white/38 sm:text-xs">
                   Starts in
                 </p>
-                <p className="mt-4 font-mono text-[4rem] font-semibold leading-none tracking-[-0.06em] text-cyan-200 sm:text-[6.5rem]">
+                <p
+                  className={`mt-4 font-mono text-[4rem] font-semibold leading-none tracking-[-0.06em] sm:text-[6.5rem] ${
+                    isUrgentCountdown
+                      ? "urgent-countdown"
+                      : "text-cyan-200"
+                  }`}
+                >
                   {meeting.minutesUntil}m
                 </p>
               </div>

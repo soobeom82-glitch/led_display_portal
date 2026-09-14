@@ -75,6 +75,7 @@ export interface CalendarMeetingAlert {
 }
 
 export interface CalendarDisplayState extends CalendarSyncPayload {
+  syncedAt: string;
   meeting: CalendarMeetingAlert | null;
   source: "google-apps-script" | "unavailable";
   message?: string;

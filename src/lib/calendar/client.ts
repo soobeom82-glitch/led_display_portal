@@ -19,6 +19,7 @@ export async function getCalendarDisplayState(
     return {
       timezone: "Asia/Seoul",
       generatedAt: new Date(0).toISOString(),
+      syncedAt: new Date(0).toISOString(),
       today: EMPTY_RANGE,
       upcoming: EMPTY_RANGE,
       meeting: null,
@@ -30,6 +31,7 @@ export async function getCalendarDisplayState(
   return {
     timezone: snapshot.timezone,
     generatedAt: snapshot.generatedAt,
+    syncedAt: snapshot.storedAt,
     today: snapshot.today,
     upcoming: snapshot.upcoming,
     meeting: findMeetingAlert(snapshot.upcoming.events, now),

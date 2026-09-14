@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { MeetingBoard } from "@/components/meeting-board";
 import { getCalendarDisplayState } from "@/lib/calendar/client";
 import type { CalendarEvent } from "@/lib/types";
@@ -15,9 +14,30 @@ function toMeetingTiming(event: CalendarEvent) {
   };
 }
 
+function formatSnapshotTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime()) || date.getTime() === 0) {
+    return "--.-- --:--";
+  }
+
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "--";
+
+  return `${getPart("month")}.${getPart("day")} ${getPart("hour")}:${getPart("minute")}`;
+}
+
 export default async function MeetingPage() {
   const calendar = await getCalendarDisplayState();
   const initialNow = new Date().toISOString();
+  const snapshotTime = formatSnapshotTime(calendar.syncedAt);
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6 sm:py-12">
@@ -27,13 +47,13 @@ export default async function MeetingPage() {
           initialNow={initialNow}
           todayEvents={calendar.today.events.map(toMeetingTiming)}
         />
-        <div className="flex justify-end gap-3 text-xs text-white/45">
-          <Link href="/display" className="hover:text-white/75">
-            Tesla + Calendar
-          </Link>
-          <Link href="/meeting" className="hover:text-white/75">
-            Refresh snapshot
-          </Link>
+        <div className="flex justify-end px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/35 sm:text-xs">
+          <p>
+            Last snapshot{" "}
+            <time dateTime={calendar.syncedAt} className="text-white/60">
+              {snapshotTime}
+            </time>
+          </p>
         </div>
       </div>
     </main>

@@ -93,7 +93,7 @@ export function MeetingBoard({
                       {meetingTimeFormatter.format(new Date(todayMeeting.end))}
                       {isNextMeeting && countdownMinutes !== null ? (
                         <span
-                          className={`ml-3 inline-flex items-baseline gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
+                          className={`ml-3 inline-flex items-start gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
                             isUrgentCountdown
                               ? "border-red-400/35 bg-red-400/12"
                               : "border-cyan-300/25 bg-cyan-300/10"

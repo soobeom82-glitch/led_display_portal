@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   compactMeetingLocation,
   findMeetingAlert,
+  getMeetingSchedule,
 } from "./next-meeting.ts";
 import type { CalendarEvent } from "../types.ts";
 
@@ -116,4 +117,32 @@ test("ignores all-day events and normalizes missing rooms", () => {
     null,
   );
   assert.equal(compactMeetingLocation(""), null);
+});
+
+test("builds a chronological timed schedule without calendar details", () => {
+  const allDay = {
+    ...consecutiveMeetings[0],
+    id: "all-day",
+    allDay: true,
+  };
+  const schedule = getMeetingSchedule([
+    consecutiveMeetings[1],
+    allDay,
+    consecutiveMeetings[0],
+  ]);
+
+  assert.deepEqual(schedule, [
+    {
+      id: "first",
+      start: "2026-09-11T10:00:00.000Z",
+      end: "2026-09-11T11:00:00.000Z",
+      location: "B7-R11",
+    },
+    {
+      id: "second",
+      start: "2026-09-11T11:00:00.000Z",
+      end: "2026-09-11T12:00:00.000Z",
+      location: "B7-R12",
+    },
+  ]);
 });

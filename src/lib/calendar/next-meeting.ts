@@ -2,6 +2,11 @@ import type { CalendarEvent, CalendarMeetingAlert } from "@/lib/types";
 
 const UPCOMING_WINDOW_MINUTES = 30;
 
+export type MeetingTiming = Pick<
+  CalendarEvent,
+  "id" | "start" | "end" | "allDay" | "location"
+>;
+
 export function compactMeetingLocation(location: string) {
   const roomCodes = location.match(/\b[A-Z]\d+(?:-[A-Z]+\d+|[A-Z]+\d+)\b/gi);
   const roomCode = roomCodes?.at(-1);
@@ -19,8 +24,20 @@ export function compactMeetingLocation(location: string) {
   return normalized || null;
 }
 
+export function getMeetingSchedule(events: MeetingTiming[]) {
+  return events
+    .filter((event) => !event.allDay)
+    .sort((left, right) => left.start.localeCompare(right.start))
+    .map((event) => ({
+      id: event.id,
+      start: event.start,
+      end: event.end,
+      location: compactMeetingLocation(event.location),
+    }));
+}
+
 export function findMeetingAlert(
-  events: CalendarEvent[],
+  events: MeetingTiming[],
   now: Date,
 ): CalendarMeetingAlert | null {
   const nowTimestamp = now.getTime();

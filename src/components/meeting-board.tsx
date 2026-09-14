@@ -79,7 +79,7 @@ export function MeetingBoard({
                     <p
                       className={`whitespace-nowrap font-mono font-medium tracking-[-0.05em] text-white/88 ${
                         isNextMeeting
-                          ? "text-3xl sm:text-5xl"
+                          ? "text-3xl sm:text-4xl"
                           : "text-2xl sm:text-3xl"
                       }`}
                     >
@@ -88,13 +88,30 @@ export function MeetingBoard({
                       {meetingTimeFormatter.format(new Date(todayMeeting.end))}
                       {isNextMeeting ? (
                         <span
-                          className={`ml-3 inline-flex rounded-full border px-3 py-1 align-middle font-mono text-sm font-semibold uppercase tracking-[0.08em] sm:ml-4 sm:px-4 sm:text-xl ${
+                          className={`ml-3 inline-flex items-baseline gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
                             isUrgentCountdown
-                              ? "urgent-countdown border-red-400/35 bg-red-400/12"
-                              : "border-cyan-300/25 bg-cyan-300/10 text-cyan-200"
+                              ? "border-red-400/35 bg-red-400/12"
+                              : "border-cyan-300/25 bg-cyan-300/10"
                           }`}
                         >
-                          Starts in {nextMeeting.minutesUntil}m
+                          <span
+                            className={`text-[9px] font-semibold uppercase tracking-[0.12em] sm:text-[11px] ${
+                              isUrgentCountdown
+                                ? "text-red-300/70"
+                                : "text-cyan-200/55"
+                            }`}
+                          >
+                            Starts in
+                          </span>
+                          <span
+                            className={`text-3xl font-bold leading-none tracking-[-0.06em] sm:text-5xl ${
+                              isUrgentCountdown
+                                ? "urgent-countdown"
+                                : "text-cyan-200"
+                            }`}
+                          >
+                            {nextMeeting.minutesUntil}m
+                          </span>
                         </span>
                       ) : null}
                     </p>

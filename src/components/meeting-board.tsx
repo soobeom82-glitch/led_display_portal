@@ -88,13 +88,13 @@ export function MeetingBoard({
                       {meetingTimeFormatter.format(new Date(todayMeeting.end))}
                       {isNextMeeting ? (
                         <span
-                          className={`ml-3 font-semibold ${
+                          className={`ml-3 inline-flex rounded-full border px-3 py-1 align-middle font-mono text-sm font-semibold uppercase tracking-[0.08em] sm:ml-4 sm:px-4 sm:text-xl ${
                             isUrgentCountdown
-                              ? "urgent-countdown"
-                              : "text-cyan-200"
+                              ? "urgent-countdown border-red-400/35 bg-red-400/12"
+                              : "border-cyan-300/25 bg-cyan-300/10 text-cyan-200"
                           }`}
                         >
-                          ({nextMeeting.minutesUntil}m)
+                          Starts in {nextMeeting.minutesUntil}m
                         </span>
                       ) : null}
                     </p>

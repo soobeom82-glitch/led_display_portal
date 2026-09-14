@@ -75,7 +75,7 @@ export function MeetingBoard({
                         }`
                   }`}
                 >
-                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                  <div>
                     <p
                       className={`whitespace-nowrap font-mono font-medium tracking-[-0.05em] text-white/88 ${
                         isNextMeeting
@@ -86,18 +86,18 @@ export function MeetingBoard({
                       {meetingTimeFormatter.format(new Date(todayMeeting.start))}
                       <span className="mx-2 text-white/20">-</span>
                       {meetingTimeFormatter.format(new Date(todayMeeting.end))}
+                      {isNextMeeting ? (
+                        <span
+                          className={`ml-3 font-semibold ${
+                            isUrgentCountdown
+                              ? "urgent-countdown"
+                              : "text-cyan-200"
+                          }`}
+                        >
+                          ({nextMeeting.minutesUntil}m)
+                        </span>
+                      ) : null}
                     </p>
-                    {isNextMeeting ? (
-                      <p
-                        className={`font-mono text-3xl font-semibold leading-none tracking-[-0.05em] sm:text-5xl ${
-                          isUrgentCountdown
-                            ? "urgent-countdown"
-                            : "text-cyan-200"
-                        }`}
-                      >
-                        {nextMeeting.minutesUntil}m
-                      </p>
-                    ) : null}
                   </div>
                   <p
                     className={`truncate text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${

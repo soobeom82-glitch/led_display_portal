@@ -1,5 +1,7 @@
 const CALENDAR_TIMEZONE = 'Asia/Seoul';
 const UPCOMING_DAYS = 7;
+const CALENDAR_SYNC_HANDLER = 'syncCalendar';
+const CALENDAR_SYNC_INTERVAL_MINUTES = 5;
 
 /** Returns today's events from the executing user's default calendar. */
 function getTodayEvents() {
@@ -60,6 +62,57 @@ function syncCalendar() {
     result.counts.upcoming
   );
   return result;
+}
+
+/**
+ * Verifies one sync, then installs exactly one five-minute clock trigger.
+ * Run this function manually once after saving the script and manifest.
+ */
+function setupCalendarSyncTrigger() {
+  const firstSync = syncCalendar();
+  removeCalendarSyncTriggers_();
+
+  ScriptApp
+    .newTrigger(CALENDAR_SYNC_HANDLER)
+    .timeBased()
+    .everyMinutes(CALENDAR_SYNC_INTERVAL_MINUTES)
+    .create();
+
+  const status = getCalendarSyncTriggerStatus();
+  console.log(
+    'Calendar sync trigger installed. interval=%s minutes count=%s',
+    status.intervalMinutes,
+    status.triggerCount
+  );
+  return {
+    enabled: status.enabled,
+    intervalMinutes: status.intervalMinutes,
+    triggerCount: status.triggerCount,
+    firstSync: firstSync
+  };
+}
+
+/** Removes all calendar sync triggers owned by the executing user. */
+function removeCalendarSyncTrigger() {
+  const removedCount = removeCalendarSyncTriggers_();
+  console.log('Calendar sync triggers removed. count=%s', removedCount);
+  return { enabled: false, removedCount: removedCount };
+}
+
+/** Returns whether the current user has an installed calendar sync trigger. */
+function getCalendarSyncTriggerStatus() {
+  const triggerCount = ScriptApp
+    .getProjectTriggers()
+    .filter(function(trigger) {
+      return trigger.getHandlerFunction() === CALENDAR_SYNC_HANDLER;
+    })
+    .length;
+
+  return {
+    enabled: triggerCount === 1,
+    intervalMinutes: CALENDAR_SYNC_INTERVAL_MINUTES,
+    triggerCount: triggerCount
+  };
 }
 
 /** Logs only titles for a one-time comparison with the visible calendar. */
@@ -131,4 +184,18 @@ function getRequiredProperty_(name) {
     throw new Error('Missing Script Property: ' + name);
   }
   return value;
+}
+
+function removeCalendarSyncTriggers_() {
+  const triggers = ScriptApp.getProjectTriggers();
+  let removedCount = 0;
+
+  triggers.forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === CALENDAR_SYNC_HANDLER) {
+      ScriptApp.deleteTrigger(trigger);
+      removedCount += 1;
+    }
+  });
+
+  return removedCount;
 }

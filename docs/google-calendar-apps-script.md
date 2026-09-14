@@ -44,10 +44,15 @@ GOOGLE_CALENDAR_SYNC_SECRET=<CALENDAR_SYNC_SECRET과 동일한 값>
 
 6. Apps Script에서 `testCalendar`를 한 번 실행하고 Calendar 읽기 권한을 승인한다.
 7. 로그의 오늘 일정 제목이 실제 캘린더와 일치하는지 확인한다.
-8. `syncCalendar`를 실행한다. 응답에 `today`, `upcoming` 건수가 표시된다.
+8. 함수 목록에서 `setupCalendarSyncTrigger`를 선택해 한 번 실행하고 추가 권한을
+   승인한다. 이 함수는 즉시 동기화를 검증한 다음 `syncCalendar`를 5분마다 실행하는
+   시간 기반 트리거를 하나만 설치한다.
+9. 왼쪽의 **트리거** 화면에서 `syncCalendar` 시간 기반 트리거가 1개인지 확인한다.
 
-자동 갱신이 필요해지면 Apps Script의 트리거 화면에서 `syncCalendar`에 시간 기반
-트리거를 추가한다. 코드가 트리거를 자동 생성하지 않으므로 현재는 수동 실행 상태다.
+`setupCalendarSyncTrigger`를 다시 실행해도 기존 동기화 트리거를 제거한 뒤 하나만
+생성하므로 중복 실행되지 않는다. 설치 상태는 `getCalendarSyncTriggerStatus`, 자동
+동기화 중지는 `removeCalendarSyncTrigger`를 수동 실행해 확인하거나 변경할 수 있다.
+설치형 트리거는 이를 생성한 회사 계정의 권한으로 실행된다.
 
 ## 확인
 

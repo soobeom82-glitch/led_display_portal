@@ -69,7 +69,7 @@ export function MeetingBoard({
                   key={`${todayMeeting.id}-${todayMeeting.start}`}
                   className={`grid grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] items-center gap-5 sm:gap-10 ${
                     isNextMeeting
-                      ? "rounded-[26px] border border-cyan-300/25 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(255,255,255,0.05))] px-5 py-6 shadow-[0_16px_50px_rgba(8,145,178,0.12)] sm:px-7 sm:py-8"
+                      ? "rounded-[26px] bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(255,255,255,0.05))] px-5 py-6 shadow-[0_16px_50px_rgba(8,145,178,0.12)] sm:px-7 sm:py-8"
                       : `border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5 ${
                           hasEnded ? "opacity-30" : "opacity-65"
                         }`

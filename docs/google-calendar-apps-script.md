@@ -84,8 +84,9 @@ Vercel은 `upcoming.events`에서 종일 일정을 제외하고 `calendar.meetin
 
 `location`은 Google Calendar 장소 문자열의 회의실 코드 패턴을 찾아 사용하므로
 `판교아지트 B동-7-lzone-B7-R11 (8)`은 `B7-R11`로 표시된다. 원본 장소는
-`upcoming.events[].location`에 그대로 보존된다. 브라우저 미리보기는 30초마다 저장된
-일정으로 상태를 다시 계산하고, 1분마다 Vercel KV의 최신 스냅샷을 다시 받는다. 이 웹
+`upcoming.events[].location`에 그대로 보존된다. `/meeting` 브라우저 미리보기는 오늘의
+시간 지정 일정을 목록으로 유지하면서 다음 회의를 크게 강조하고 남은 분을 표시한다.
+화면 상태는 30초마다 계산하고 1분마다 Vercel KV의 최신 스냅샷을 다시 받는다. 이 웹
 갱신은 Google Calendar를 직접 호출하지 않는다.
 
 ## 기존 실패 방식과 차이

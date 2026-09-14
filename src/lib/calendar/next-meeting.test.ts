@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   compactMeetingLocation,
   findMeetingAlert,
+  findNextMeetingSchedule,
   getMeetingSchedule,
 } from "./next-meeting.ts";
 import type { CalendarEvent } from "../types.ts";
@@ -145,4 +146,25 @@ test("builds a chronological timed schedule without calendar details", () => {
       location: "B7-R12",
     },
   ]);
+});
+
+test("finds the next timed meeting and returns its remaining whole minutes", () => {
+  const nextMeeting = findNextMeetingSchedule(
+    consecutiveMeetings,
+    new Date("2026-09-11T10:15:30.000Z"),
+  );
+
+  assert.equal(nextMeeting?.id, "second");
+  assert.equal(nextMeeting?.minutesUntil, 45);
+  assert.equal(nextMeeting?.location, "B7-R12");
+});
+
+test("returns no next meeting after the final meeting starts", () => {
+  assert.equal(
+    findNextMeetingSchedule(
+      consecutiveMeetings,
+      new Date("2026-09-11T11:00:00.000Z"),
+    ),
+    null,
+  );
 });

@@ -36,6 +36,25 @@ export function getMeetingSchedule(events: MeetingTiming[]) {
     }));
 }
 
+export function findNextMeetingSchedule(events: MeetingTiming[], now: Date) {
+  const nowTimestamp = now.getTime();
+  const nextMeeting = getMeetingSchedule(events).find(
+    (event) => Date.parse(event.start) > nowTimestamp,
+  );
+
+  if (!nextMeeting) {
+    return null;
+  }
+
+  return {
+    ...nextMeeting,
+    minutesUntil: Math.max(
+      1,
+      Math.ceil((Date.parse(nextMeeting.start) - nowTimestamp) / 60_000),
+    ),
+  };
+}
+
 export function findMeetingAlert(
   events: MeetingTiming[],
   now: Date,

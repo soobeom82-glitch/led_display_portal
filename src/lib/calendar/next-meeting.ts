@@ -1,6 +1,6 @@
 import type { CalendarEvent, CalendarMeetingAlert } from "@/lib/types";
 
-const UPCOMING_WINDOW_MINUTES = 30;
+export const UPCOMING_WINDOW_MINUTES = 30;
 
 export type MeetingTiming = Pick<
   CalendarEvent,

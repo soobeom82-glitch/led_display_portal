@@ -6,6 +6,7 @@ import {
   findNextMeetingSchedule,
   getMeetingSchedule,
   type MeetingTiming,
+  UPCOMING_WINDOW_MINUTES,
 } from "@/lib/calendar/next-meeting";
 
 const meetingTimeFormatter = new Intl.DateTimeFormat("en-GB", {
@@ -28,8 +29,12 @@ export function MeetingBoard({
   const todayMeetings = getMeetingSchedule(todayEvents);
   const [now, setNow] = useState(() => new Date(initialNow));
   const nextMeeting = findNextMeetingSchedule(todayEvents, now);
+  const countdownMinutes =
+    nextMeeting && nextMeeting.minutesUntil <= UPCOMING_WINDOW_MINUTES
+      ? nextMeeting.minutesUntil
+      : null;
   const isUrgentCountdown =
-    nextMeeting !== null && nextMeeting.minutesUntil <= 3;
+    countdownMinutes !== null && countdownMinutes <= 3;
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(new Date()), 30_000);
@@ -86,7 +91,7 @@ export function MeetingBoard({
                       {meetingTimeFormatter.format(new Date(todayMeeting.start))}
                       <span className="mx-2 text-white/20">-</span>
                       {meetingTimeFormatter.format(new Date(todayMeeting.end))}
-                      {isNextMeeting ? (
+                      {isNextMeeting && countdownMinutes !== null ? (
                         <span
                           className={`ml-3 inline-flex items-baseline gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
                             isUrgentCountdown
@@ -110,7 +115,7 @@ export function MeetingBoard({
                                 : "text-cyan-200"
                             }`}
                           >
-                            {nextMeeting.minutesUntil}m
+                            {countdownMinutes}m
                           </span>
                         </span>
                       ) : null}

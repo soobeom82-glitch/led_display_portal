@@ -23,7 +23,15 @@ const meetingDateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
 });
 
-const DAY_LABELS = ["Yesterday", "Today", "Tomorrow"] as const;
+const DAY_LABELS = ["YESTERDAY", "TODAY", "TOMORROW"] as const;
+
+function formatMeetingDate(value: string) {
+  const parts = meetingDateFormatter.formatToParts(new Date(value));
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value.toUpperCase() ?? "--";
+
+  return `${getPart("weekday")}. ${getPart("month")} ${getPart("day")}`;
+}
 
 interface MeetingDay {
   start: string;
@@ -33,11 +41,15 @@ interface MeetingDay {
 interface MeetingBoardProps {
   initialNow: string;
   meetingDays: MeetingDay[];
+  snapshotTime: string;
+  syncedAt: string;
 }
 
 export function MeetingBoard({
   initialNow,
   meetingDays,
+  snapshotTime,
+  syncedAt,
 }: MeetingBoardProps) {
   const router = useRouter();
   const [now, setNow] = useState(() => new Date(initialNow));
@@ -79,7 +91,7 @@ export function MeetingBoard({
       </div>
 
       <div className="relative flex flex-1 flex-col">
-        <div className="flex items-center justify-between border-b border-white/12 pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-white/15 pb-4">
           <div className="flex items-center gap-2 sm:gap-4">
             <button
               type="button"
@@ -90,14 +102,14 @@ export function MeetingBoard({
             >
               ‹
             </button>
-            <div className="min-w-28 sm:min-w-36">
-              <p className="font-mono text-xs uppercase tracking-[0.28em] text-cyan-200/80 sm:text-sm">
+            <div className="min-w-0">
+              <p className="whitespace-nowrap font-mono text-base font-bold uppercase tracking-[0.12em] text-cyan-100 sm:text-lg sm:tracking-[0.16em]">
                 {DAY_LABELS[selectedDayIndex]}
-              </p>
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-white/42 sm:text-xs">
-                {selectedDay
-                  ? meetingDateFormatter.format(new Date(selectedDay.start))
-                  : "--"}
+                <span className="ml-2 text-white/85 sm:ml-3">
+                  {selectedDay
+                    ? formatMeetingDate(selectedDay.start)
+                    : "--"}
+                </span>
               </p>
             </div>
             <button
@@ -114,9 +126,17 @@ export function MeetingBoard({
               ›
             </button>
           </div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/65 sm:text-xs">
-            Time / Room
-          </p>
+          <div className="ml-auto shrink-0 text-right font-mono uppercase">
+            <p className="text-xs font-semibold tracking-[0.18em] text-white/90 sm:text-sm">
+              Time / Room
+            </p>
+            <p className="mt-1 text-[10px] tracking-[0.1em] text-white/70 sm:text-xs sm:tracking-[0.14em]">
+              Last snapshot{" "}
+              <time dateTime={syncedAt} className="font-bold text-amber-100">
+                {snapshotTime}
+              </time>
+            </p>
+          </div>
         </div>
 
         {selectedMeetings.length > 0 ? (

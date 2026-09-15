@@ -85,15 +85,9 @@ export default async function MeetingPage() {
         <MeetingBoard
           initialNow={initialNow}
           meetingDays={meetingDays}
+          snapshotTime={snapshotTime}
+          syncedAt={calendar.syncedAt}
         />
-        <div className="flex justify-end px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/35 sm:text-xs">
-          <p>
-            Last snapshot{" "}
-            <time dateTime={calendar.syncedAt} className="text-white/60">
-              {snapshotTime}
-            </time>
-          </p>
-        </div>
       </div>
     </main>
   );

@@ -6,7 +6,7 @@
 회사 Google Workspace 기본 캘린더
         |
         v
-Google Apps Script (CalendarApp, 사용자 OAuth)
+Google Apps Script (고급 Calendar 서비스, 사용자 OAuth)
         |
         | HTTPS POST + shared secret
         v
@@ -19,14 +19,17 @@ Vercel KV
         +--> /api/display.calendar
 ```
 
-Apps Script는 스크립트를 실행한 사용자의 `CalendarApp.getDefaultCalendar()`만
-조회한다. 다른 직원 캘린더, 회사 전체 캘린더, 일정 쓰기 기능은 사용하지 않는다.
+Apps Script는 스크립트를 실행한 사용자의 `primary` 캘린더만 조회한다. 다른 직원
+캘린더, 회사 전체 캘린더, 일정 쓰기 기능은 사용하지 않는다. 고급 Calendar 서비스는
+Apps Script의 사용자 OAuth를 그대로 사용하므로 Vercel에 별도 Google OAuth
+클라이언트나 토큰을 추가하지 않는다.
 
 ## Apps Script 설정
 
 1. 회사 계정으로 새 Apps Script 프로젝트를 만든다.
 2. 프로젝트 설정에서 `appsscript.json` 표시를 켠다.
 3. 저장소의 `google-apps-script/Code.gs`와 `appsscript.json` 내용을 각각 붙여 넣는다.
+   `appsscript.json`의 `enabledAdvancedServices`가 Calendar API v3를 활성화한다.
 4. 프로젝트 설정의 스크립트 속성에 아래 두 값을 추가한다.
 
 비밀값은 로컬 터미널에서 `openssl rand -hex 32`로 생성할 수 있다.
@@ -80,12 +83,15 @@ curl -s \
 
 모든 시간은 전송 시 ISO 8601 UTC 형식으로 정규화되고, 표시할 때 `Asia/Seoul`로
 변환한다. 종일 일정은 `allDay: true`, 장소와 설명이 없으면 빈 문자열이다. 실행 사용자의
-참석 상태는 `responseStatus`로 정규화한다.
+참석 상태는 Calendar API 응답의 `attendees[].self.responseStatus`를 읽어
+`responseStatus`로 정규화한다.
 
-Apps Script는 `getMyStatus()`가 `NO`인 참여 거절 일정과 제목에 `휴가`가 포함된 일정을
+Apps Script는 내 응답이 `declined`인 참여 거절 일정과 제목에 `휴가`가 포함된 일정을
 스냅샷 생성 단계에서 제외한다. Vercel도 같은 필터를 다시 적용하므로 오래된 스냅샷에
-남아 있는 `휴가` 일정은 배포 즉시 숨겨진다. 기존 스냅샷에는 참석 상태가 없으므로 거절
-일정을 즉시 제거하려면 최신 `Code.gs` 저장 후 `syncCalendar`를 한 번 실행한다.
+남아 있는 `휴가` 일정은 배포 즉시 숨겨진다. 내장 `CalendarApp.getMyStatus()`는 특정
+회사 일정에서 참여 거부 후에도 `OWNER`를 반환했기 때문에 사용하지 않는다. 기존
+스냅샷에는 정확한 참석 상태가 없으므로 거절 일정을 즉시 제거하려면 최신 `Code.gs`와
+`appsscript.json` 저장 후 `syncCalendar`를 한 번 실행한다.
 
 Vercel은 `upcoming.events`에서 종일 일정을 제외하고 `calendar.meeting` 표시 상태를
 계산한다. 다음 회의 30분 전부터는 `phase: upcoming`과 정수 `minutesUntil`, 회의실을
@@ -106,7 +112,7 @@ Vercel KV의 최신 스냅샷을 다시 받는다. 이 웹 갱신은 Google Cale
 
 기존 시도는 Google Calendar REST API를 Vercel에서 직접 호출하기 위해 별도의 OAuth
 클라이언트가 필요했고, 클라이언트를 찾지 못해 `401 invalid_client`가 발생했다. 새 방식은
-회사 계정으로 실행되는 Apps Script의 내장 `CalendarApp`이 사용자 승인을 처리한다.
+회사 계정으로 실행되는 Apps Script의 고급 Calendar 서비스가 사용자 승인을 처리한다.
 Vercel은 Google 토큰, OAuth client ID/secret, 서비스 계정을 보관하지 않는다.
 
 `401 invalid_client`가 Apps Script 실행 중 다시 나타나면 코드 수정 대신 새 Apps Script

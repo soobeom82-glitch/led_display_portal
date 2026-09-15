@@ -134,27 +134,73 @@ function buildRange_(start, end) {
 }
 
 function getEventsInRange_(start, end) {
-  return CalendarApp
-    .getDefaultCalendar()
-    .getEvents(start, end)
-    .map(normalizeEvent_)
+  const events = [];
+  let pageToken;
+
+  do {
+    const options = {
+      timeMin: start.toISOString(),
+      timeMax: end.toISOString(),
+      timeZone: CALENDAR_TIMEZONE,
+      singleEvents: true,
+      orderBy: 'startTime',
+      showDeleted: false,
+      maxResults: 2500
+    };
+    if (pageToken) {
+      options.pageToken = pageToken;
+    }
+
+    const page = Calendar.Events.list('primary', options);
+    Array.prototype.push.apply(events, page.items || []);
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+
+  return events
+    .filter(function(event) { return event.status !== 'cancelled'; })
+    .map(normalizeApiEvent_)
     .filter(shouldDisplayEvent_)
     .sort(function(left, right) {
       return left.start.localeCompare(right.start);
     });
 }
 
-function normalizeEvent_(event) {
+function normalizeApiEvent_(event) {
+  const allDay = Boolean(event.start && event.start.date);
   return {
-    id: event.getId(),
-    title: event.getTitle(),
-    start: event.getStartTime().toISOString(),
-    end: event.getEndTime().toISOString(),
-    allDay: event.isAllDayEvent(),
-    location: event.getLocation() || '',
-    description: event.getDescription() || '',
-    responseStatus: event.getMyStatus().toString().toLowerCase()
+    id: event.iCalUID || event.id,
+    title: event.summary || '',
+    start: normalizeApiDate_(event.start),
+    end: normalizeApiDate_(event.end),
+    allDay: allDay,
+    location: event.location || '',
+    description: event.description || '',
+    responseStatus: getApiResponseStatus_(event)
   };
+}
+
+function normalizeApiDate_(value) {
+  if (value && value.dateTime) {
+    return new Date(value.dateTime).toISOString();
+  }
+  if (value && value.date) {
+    return parseSeoulDate_(value.date).toISOString();
+  }
+  throw new Error('Calendar event is missing a start or end date.');
+}
+
+function getApiResponseStatus_(event) {
+  const selfAttendee = (event.attendees || []).find(function(attendee) {
+    return attendee.self === true;
+  });
+  const status = selfAttendee && selfAttendee.responseStatus;
+
+  if (status === 'declined') return 'no';
+  if (status === 'tentative') return 'maybe';
+  if (status === 'accepted') return 'yes';
+  if (status === 'needsAction') return 'invited';
+  if (event.organizer && event.organizer.self === true) return 'owner';
+  return 'invited';
 }
 
 function shouldDisplayEvent_(event) {

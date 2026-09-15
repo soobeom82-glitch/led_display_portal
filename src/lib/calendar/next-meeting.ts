@@ -4,7 +4,7 @@ export const UPCOMING_WINDOW_MINUTES = 30;
 
 export type MeetingTiming = Pick<
   CalendarEvent,
-  "id" | "start" | "end" | "allDay" | "location"
+  "id" | "title" | "start" | "end" | "allDay" | "location"
 >;
 
 export function compactMeetingLocation(location: string) {
@@ -30,6 +30,7 @@ export function getMeetingSchedule(events: MeetingTiming[]) {
     .sort((left, right) => left.start.localeCompare(right.start))
     .map((event) => ({
       id: event.id,
+      title: event.title,
       start: event.start,
       end: event.end,
       location: compactMeetingLocation(event.location),

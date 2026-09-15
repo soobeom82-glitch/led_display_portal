@@ -42,6 +42,9 @@ export function MeetingBoard({
   const router = useRouter();
   const [now, setNow] = useState(() => new Date(initialNow));
   const [selectedDayIndex, setSelectedDayIndex] = useState(1);
+  const [revealedMeetingKey, setRevealedMeetingKey] = useState<string | null>(
+    null,
+  );
   const selectedDay = meetingDays[selectedDayIndex] ?? meetingDays[1];
   const selectedMeetings = getMeetingSchedule(selectedDay?.events ?? []);
   const allEvents = meetingDays.flatMap((day) => day.events);
@@ -62,6 +65,12 @@ export function MeetingBoard({
     const refreshId = window.setInterval(() => router.refresh(), 60_000);
     return () => window.clearInterval(refreshId);
   }, [router]);
+
+  useEffect(() => {
+    const hideTitle = () => setRevealedMeetingKey(null);
+    window.addEventListener("blur", hideTitle);
+    return () => window.removeEventListener("blur", hideTitle);
+  }, []);
 
   return (
     <section className="meeting-board relative flex min-h-[620px] w-full max-w-5xl flex-col overflow-hidden rounded-[36px] border border-white/10 p-6 text-white shadow-[0_32px_100px_rgba(0,0,0,0.58)] sm:min-h-[680px] sm:p-10">
@@ -113,22 +122,62 @@ export function MeetingBoard({
         {selectedMeetings.length > 0 ? (
           <div className="flex flex-1 flex-col gap-2 overflow-y-auto py-3 sm:gap-3">
             {selectedMeetings.map((meeting) => {
+              const meetingKey = `${meeting.id}-${meeting.start}`;
+              const isTitleVisible = revealedMeetingKey === meetingKey;
               const isNextMeeting =
                 nextMeeting?.id === meeting.id &&
                 nextMeeting.start === meeting.start;
               const hasEnded = Date.parse(meeting.end) <= now.getTime();
 
               return (
-                <div
-                  key={`${meeting.id}-${meeting.start}`}
-                  className={`grid grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] items-center gap-5 sm:gap-10 ${
+                <button
+                  key={meetingKey}
+                  type="button"
+                  aria-label="Hold to show meeting title"
+                  onContextMenu={(event) => event.preventDefault()}
+                  onPointerDown={(event) => {
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                    setRevealedMeetingKey(meetingKey);
+                  }}
+                  onPointerUp={(event) => {
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                      event.currentTarget.releasePointerCapture(event.pointerId);
+                    }
+                    setRevealedMeetingKey(null);
+                  }}
+                  onPointerCancel={() => setRevealedMeetingKey(null)}
+                  onLostPointerCapture={() => setRevealedMeetingKey(null)}
+                  onKeyDown={(event) => {
+                    if (event.key === " " || event.key === "Enter") {
+                      setRevealedMeetingKey(meetingKey);
+                    }
+                  }}
+                  onKeyUp={() => setRevealedMeetingKey(null)}
+                  onBlur={() => setRevealedMeetingKey(null)}
+                  className={`relative grid w-full touch-pan-y select-none grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] items-center gap-5 text-left [-webkit-touch-callout:none] sm:gap-10 ${
                     isNextMeeting
                       ? "px-2 py-6 sm:px-3 sm:py-8"
                       : `border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5 ${
-                          hasEnded ? "opacity-30" : "opacity-65"
+                          isTitleVisible
+                            ? "opacity-100"
+                            : hasEnded
+                              ? "opacity-30"
+                              : "opacity-65"
                         }`
                   }`}
                 >
+                  {isTitleVisible ? (
+                    <span className="pointer-events-none absolute inset-0 z-10 flex items-center rounded-2xl border border-cyan-200/20 bg-[#07151c]/95 px-5 shadow-[0_14px_40px_rgba(0,0,0,0.42)] backdrop-blur-md sm:px-7">
+                      <span>
+                        <span className="block font-mono text-[9px] uppercase tracking-[0.24em] text-cyan-200/55 sm:text-xs">
+                          Meeting title
+                        </span>
+                        <span className="mt-1 line-clamp-2 block text-xl font-semibold leading-tight tracking-[-0.035em] text-white sm:text-3xl">
+                          {meeting.title}
+                        </span>
+                      </span>
+                    </span>
+                  ) : null}
                   <div>
                     <p
                       className={`whitespace-nowrap font-mono font-medium tracking-[-0.05em] text-white/88 ${
@@ -179,7 +228,7 @@ export function MeetingBoard({
                   >
                     {meeting.location ?? "--"}
                   </p>
-                </div>
+                </button>
               );
             })}
           </div>

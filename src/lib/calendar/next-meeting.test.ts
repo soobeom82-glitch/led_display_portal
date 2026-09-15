@@ -135,12 +135,14 @@ test("builds a chronological timed schedule without calendar details", () => {
   assert.deepEqual(schedule, [
     {
       id: "first",
+      title: "first 회의",
       start: "2026-09-11T10:00:00.000Z",
       end: "2026-09-11T11:00:00.000Z",
       location: "B7-R11",
     },
     {
       id: "second",
+      title: "second 회의",
       start: "2026-09-11T11:00:00.000Z",
       end: "2026-09-11T12:00:00.000Z",
       location: "B7-R12",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   findNextMeetingSchedule,
@@ -24,6 +24,7 @@ const meetingDateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 const DAY_LABELS = ["YESTERDAY", "TODAY", "TOMORROW"] as const;
+const SWIPE_THRESHOLD_PX = 60;
 
 function formatMeetingDate(value: string) {
   const parts = meetingDateFormatter.formatToParts(new Date(value));
@@ -57,6 +58,11 @@ export function MeetingBoard({
   const [revealedMeetingKey, setRevealedMeetingKey] = useState<string | null>(
     null,
   );
+  const swipeStartRef = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const selectedDay = meetingDays[selectedDayIndex] ?? meetingDays[1];
   const selectedMeetings = getMeetingSchedule(selectedDay?.events ?? []);
   const allEvents = meetingDays.flatMap((day) => day.events);
@@ -84,47 +90,98 @@ export function MeetingBoard({
     return () => window.removeEventListener("blur", hideTitle);
   }, []);
 
+  function startSwipe(event: PointerEvent<HTMLElement>) {
+    swipeStartRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+    };
+
+    const target = event.target as Element;
+    if (!target.closest("button")) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+  }
+
+  function trackSwipe(event: PointerEvent<HTMLElement>) {
+    const start = swipeStartRef.current;
+    if (!start || start.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const horizontalDistance = Math.abs(event.clientX - start.x);
+    const verticalDistance = Math.abs(event.clientY - start.y);
+    if (horizontalDistance > 12 && horizontalDistance > verticalDistance) {
+      setRevealedMeetingKey(null);
+    }
+  }
+
+  function finishSwipe(event: PointerEvent<HTMLElement>) {
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!start || start.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const horizontalDistance = event.clientX - start.x;
+    const verticalDistance = event.clientY - start.y;
+    if (
+      Math.abs(horizontalDistance) < SWIPE_THRESHOLD_PX ||
+      Math.abs(horizontalDistance) <= Math.abs(verticalDistance) * 1.2
+    ) {
+      return;
+    }
+
+    setSelectedDayIndex((index) =>
+      Math.max(
+        0,
+        Math.min(
+          meetingDays.length - 1,
+          index + (horizontalDistance < 0 ? 1 : -1),
+        ),
+      ),
+    );
+  }
+
   return (
-    <section className="meeting-board relative flex min-h-[620px] w-full max-w-5xl flex-col overflow-hidden rounded-[36px] border border-white/10 p-6 text-white shadow-[0_32px_100px_rgba(0,0,0,0.58)] sm:min-h-[680px] sm:p-10">
+    <section
+      onPointerDown={startSwipe}
+      onPointerMove={trackSwipe}
+      onPointerUp={finishSwipe}
+      onPointerCancel={() => {
+        swipeStartRef.current = null;
+        setRevealedMeetingKey(null);
+      }}
+      className="meeting-board relative flex min-h-[620px] w-full max-w-5xl touch-pan-y select-none flex-col overflow-hidden rounded-[36px] border border-white/10 p-6 text-white shadow-[0_32px_100px_rgba(0,0,0,0.58)] sm:min-h-[680px] sm:p-10"
+    >
       <div className="absolute inset-0 opacity-60">
         <div className="fine-grid h-full w-full" />
       </div>
 
       <div className="relative flex flex-1 flex-col">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-white/15 pb-4">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <button
-              type="button"
-              aria-label="Previous day"
-              disabled={selectedDayIndex === 0}
-              onClick={() => setSelectedDayIndex((index) => Math.max(0, index - 1))}
-              className="flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/5 font-mono text-3xl leading-none text-cyan-100 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-20 sm:size-13"
+          <div className="flex min-w-0 items-center gap-4">
+            <p className="whitespace-nowrap font-mono text-base font-bold uppercase tracking-[0.12em] text-cyan-100 sm:text-lg sm:tracking-[0.16em]">
+              {DAY_LABELS[selectedDayIndex]}
+              <span className="ml-2 text-white/85 sm:ml-3">
+                {selectedDay ? formatMeetingDate(selectedDay.start) : "--"}
+              </span>
+            </p>
+            <div
+              aria-label={`Day ${selectedDayIndex + 1} of ${meetingDays.length}`}
+              className="flex items-center gap-1.5"
             >
-              ‹
-            </button>
-            <div className="min-w-0">
-              <p className="whitespace-nowrap font-mono text-base font-bold uppercase tracking-[0.12em] text-cyan-100 sm:text-lg sm:tracking-[0.16em]">
-                {DAY_LABELS[selectedDayIndex]}
-                <span className="ml-2 text-white/85 sm:ml-3">
-                  {selectedDay
-                    ? formatMeetingDate(selectedDay.start)
-                    : "--"}
-                </span>
-              </p>
+              {meetingDays.map((day, index) => (
+                <span
+                  key={day.start}
+                  className={`block size-1.5 rounded-full transition-colors sm:size-2 ${
+                    index === selectedDayIndex
+                      ? "bg-cyan-200"
+                      : "bg-white/20"
+                  }`}
+                />
+              ))}
             </div>
-            <button
-              type="button"
-              aria-label="Next day"
-              disabled={selectedDayIndex === meetingDays.length - 1}
-              onClick={() =>
-                setSelectedDayIndex((index) =>
-                  Math.min(meetingDays.length - 1, index + 1),
-                )
-              }
-              className="flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/5 font-mono text-3xl leading-none text-cyan-100 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-20 sm:size-13"
-            >
-              ›
-            </button>
           </div>
           <div className="ml-auto shrink-0 text-right font-mono uppercase">
             <p className="text-xs font-semibold tracking-[0.18em] text-white/90 sm:text-sm">

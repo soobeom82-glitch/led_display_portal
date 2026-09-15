@@ -50,6 +50,7 @@ export interface CalendarEvent {
   allDay: boolean;
   location: string;
   description: string;
+  responseStatus?: "invited" | "maybe" | "no" | "owner" | "yes";
 }
 
 export interface CalendarEventRange {

@@ -138,6 +138,7 @@ function getEventsInRange_(start, end) {
     .getDefaultCalendar()
     .getEvents(start, end)
     .map(normalizeEvent_)
+    .filter(shouldDisplayEvent_)
     .sort(function(left, right) {
       return left.start.localeCompare(right.start);
     });
@@ -151,8 +152,13 @@ function normalizeEvent_(event) {
     end: event.getEndTime().toISOString(),
     allDay: event.isAllDayEvent(),
     location: event.getLocation() || '',
-    description: event.getDescription() || ''
+    description: event.getDescription() || '',
+    responseStatus: event.getMyStatus().toString().toLowerCase()
   };
+}
+
+function shouldDisplayEvent_(event) {
+  return event.responseStatus !== 'no' && event.title.indexOf('휴가') === -1;
 }
 
 function getTodayRange_() {

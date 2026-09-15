@@ -2,6 +2,7 @@ import "server-only";
 
 import { findMeetingAlert } from "@/lib/calendar/next-meeting";
 import { readCalendarSnapshot } from "@/lib/calendar/store";
+import { filterCalendarEventRange } from "@/lib/calendar/visibility";
 import type { CalendarDisplayState } from "@/lib/types";
 
 const EMPTY_RANGE = {
@@ -29,14 +30,20 @@ export async function getCalendarDisplayState(
     };
   }
 
+  const today = filterCalendarEventRange(snapshot.today);
+  const upcoming = filterCalendarEventRange(snapshot.upcoming);
+  const browsing = filterCalendarEventRange(
+    snapshot.browsing ?? snapshot.today,
+  );
+
   return {
     timezone: snapshot.timezone,
     generatedAt: snapshot.generatedAt,
     syncedAt: snapshot.storedAt,
-    today: snapshot.today,
-    upcoming: snapshot.upcoming,
-    browsing: snapshot.browsing ?? snapshot.today,
-    meeting: findMeetingAlert(snapshot.upcoming.events, now),
+    today,
+    upcoming,
+    browsing,
+    meeting: findMeetingAlert(upcoming.events, now),
     source: "google-apps-script",
   };
 }

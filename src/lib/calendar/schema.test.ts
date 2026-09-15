@@ -50,6 +50,7 @@ test("normalizes Korean, timed, all-day, recurring, and optional fields", () => 
           start: "2026-09-12T12:00:00+09:00",
           end: "2026-09-12T13:00:00+09:00",
           allDay: false,
+          responseStatus: "YES",
         },
         {
           id: "all-day@example.com",
@@ -77,7 +78,31 @@ test("normalizes Korean, timed, all-day, recurring, and optional fields", () => 
   assert.equal(parsed.upcoming.events[1].title, "점심");
   assert.equal(parsed.upcoming.events[1].start, "2026-09-12T03:00:00.000Z");
   assert.equal(parsed.upcoming.events[1].location, "");
+  assert.equal(parsed.upcoming.events[1].responseStatus, "yes");
   assert.equal(parsed.upcoming.events[2].id, "recurring@example.com");
+});
+
+test("rejects an unknown calendar response status", () => {
+  assert.throws(
+    () =>
+      parseCalendarSyncPayload({
+        ...basePayload,
+        today: {
+          ...basePayload.today,
+          events: [
+            {
+              id: "meeting@example.com",
+              title: "회의",
+              start: "2026-09-11T01:00:00.000Z",
+              end: "2026-09-11T02:00:00.000Z",
+              allDay: false,
+              responseStatus: "unknown",
+            },
+          ],
+        },
+      }),
+    /responseStatus is invalid/,
+  );
 });
 
 test("rejects a non-Seoul timezone", () => {

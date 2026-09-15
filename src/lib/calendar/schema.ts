@@ -7,6 +7,13 @@ import type {
 const CALENDAR_TIMEZONE = "Asia/Seoul" as const;
 const MAX_EVENTS_PER_RANGE = 500;
 const MAX_RANGE_DAYS = 31;
+const CALENDAR_RESPONSE_STATUSES = new Set([
+  "invited",
+  "maybe",
+  "no",
+  "owner",
+  "yes",
+]);
 
 function asRecord(value: unknown, field: string): Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
@@ -39,6 +46,19 @@ function asIsoDate(value: unknown, field: string) {
   return new Date(timestamp).toISOString();
 }
 
+function asResponseStatus(value: unknown, field: string) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const status = asString(value, field, 16).toLowerCase();
+  if (!CALENDAR_RESPONSE_STATUSES.has(status)) {
+    throw new Error(`${field} is invalid.`);
+  }
+
+  return status as CalendarEvent["responseStatus"];
+}
+
 function parseEvent(value: unknown, index: number, rangeName: string): CalendarEvent {
   const event = asRecord(value, `${rangeName}.events[${index}]`);
   const start = asIsoDate(event.start, `${rangeName}.events[${index}].start`);
@@ -67,6 +87,10 @@ function parseEvent(value: unknown, index: number, rangeName: string): CalendarE
       event.description ?? "",
       `${rangeName}.events[${index}].description`,
       10000,
+    ),
+    responseStatus: asResponseStatus(
+      event.responseStatus,
+      `${rangeName}.events[${index}].responseStatus`,
     ),
   };
 }

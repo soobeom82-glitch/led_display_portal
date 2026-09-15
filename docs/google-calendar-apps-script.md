@@ -79,7 +79,13 @@ curl -s \
 동일한 Calendar 이벤트 ID를 가질 수 있으므로 화면 key는 `id + start` 조합을 사용한다.
 
 모든 시간은 전송 시 ISO 8601 UTC 형식으로 정규화되고, 표시할 때 `Asia/Seoul`로
-변환한다. 종일 일정은 `allDay: true`, 장소와 설명이 없으면 빈 문자열이다.
+변환한다. 종일 일정은 `allDay: true`, 장소와 설명이 없으면 빈 문자열이다. 실행 사용자의
+참석 상태는 `responseStatus`로 정규화한다.
+
+Apps Script는 `getMyStatus()`가 `NO`인 참여 거절 일정과 제목에 `휴가`가 포함된 일정을
+스냅샷 생성 단계에서 제외한다. Vercel도 같은 필터를 다시 적용하므로 오래된 스냅샷에
+남아 있는 `휴가` 일정은 배포 즉시 숨겨진다. 기존 스냅샷에는 참석 상태가 없으므로 거절
+일정을 즉시 제거하려면 최신 `Code.gs` 저장 후 `syncCalendar`를 한 번 실행한다.
 
 Vercel은 `upcoming.events`에서 종일 일정을 제외하고 `calendar.meeting` 표시 상태를
 계산한다. 다음 회의 30분 전부터는 `phase: upcoming`과 정수 `minutesUntil`, 회의실을

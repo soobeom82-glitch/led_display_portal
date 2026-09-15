@@ -58,13 +58,18 @@ export function MeetingBoard({
   const [revealedMeetingKey, setRevealedMeetingKey] = useState<string | null>(
     null,
   );
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const swipeStartRef = useRef<{
     pointerId: number;
     x: number;
     y: number;
   } | null>(null);
+  const swipeAxisRef = useRef<"horizontal" | "vertical" | null>(null);
   const selectedDay = meetingDays[selectedDayIndex] ?? meetingDays[1];
-  const selectedMeetings = getMeetingSchedule(selectedDay?.events ?? []);
+  const meetingSchedules = meetingDays.map((day) =>
+    getMeetingSchedule(day.events),
+  );
   const allEvents = meetingDays.flatMap((day) => day.events);
   const nextMeeting = findNextMeetingSchedule(allEvents, now);
   const countdownMinutes =
@@ -85,12 +90,19 @@ export function MeetingBoard({
   }, [router]);
 
   useEffect(() => {
-    const hideTitle = () => setRevealedMeetingKey(null);
-    window.addEventListener("blur", hideTitle);
-    return () => window.removeEventListener("blur", hideTitle);
+    const resetInteraction = () => {
+      setRevealedMeetingKey(null);
+      setDragOffset(0);
+      setIsDragging(false);
+      swipeStartRef.current = null;
+      swipeAxisRef.current = null;
+    };
+    window.addEventListener("blur", resetInteraction);
+    return () => window.removeEventListener("blur", resetInteraction);
   }, []);
 
   function startSwipe(event: PointerEvent<HTMLElement>) {
+    swipeAxisRef.current = null;
     swipeStartRef.current = {
       pointerId: event.pointerId,
       x: event.clientX,
@@ -109,26 +121,48 @@ export function MeetingBoard({
       return;
     }
 
-    const horizontalDistance = Math.abs(event.clientX - start.x);
-    const verticalDistance = Math.abs(event.clientY - start.y);
-    if (horizontalDistance > 12 && horizontalDistance > verticalDistance) {
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+    const horizontalDistance = Math.abs(deltaX);
+    const verticalDistance = Math.abs(deltaY);
+
+    if (
+      swipeAxisRef.current === null &&
+      Math.max(horizontalDistance, verticalDistance) > 8
+    ) {
+      swipeAxisRef.current =
+        horizontalDistance > verticalDistance ? "horizontal" : "vertical";
+    }
+
+    if (swipeAxisRef.current === "horizontal") {
+      const isPastStart = selectedDayIndex === 0 && deltaX > 0;
+      const isPastEnd =
+        selectedDayIndex === meetingDays.length - 1 && deltaX < 0;
       setRevealedMeetingKey(null);
+      setIsDragging(true);
+      setDragOffset(isPastStart || isPastEnd ? deltaX * 0.22 : deltaX);
     }
   }
 
   function finishSwipe(event: PointerEvent<HTMLElement>) {
     const start = swipeStartRef.current;
     swipeStartRef.current = null;
+    const wasHorizontal = swipeAxisRef.current === "horizontal";
+    swipeAxisRef.current = null;
     if (!start || start.pointerId !== event.pointerId) {
+      setDragOffset(0);
+      setIsDragging(false);
       return;
     }
 
     const horizontalDistance = event.clientX - start.x;
     const verticalDistance = event.clientY - start.y;
-    if (
+    const isShortSwipe =
       Math.abs(horizontalDistance) < SWIPE_THRESHOLD_PX ||
-      Math.abs(horizontalDistance) <= Math.abs(verticalDistance) * 1.2
-    ) {
+      Math.abs(horizontalDistance) <= Math.abs(verticalDistance) * 1.2;
+    if (!wasHorizontal || isShortSwipe) {
+      setDragOffset(0);
+      setIsDragging(false);
       return;
     }
 
@@ -141,6 +175,8 @@ export function MeetingBoard({
         ),
       ),
     );
+    setDragOffset(0);
+    setIsDragging(false);
   }
 
   return (
@@ -150,6 +186,9 @@ export function MeetingBoard({
       onPointerUp={finishSwipe}
       onPointerCancel={() => {
         swipeStartRef.current = null;
+        swipeAxisRef.current = null;
+        setDragOffset(0);
+        setIsDragging(false);
         setRevealedMeetingKey(null);
       }}
       className="meeting-board relative flex min-h-[620px] w-full max-w-5xl touch-pan-y select-none flex-col overflow-hidden rounded-[36px] border border-white/10 p-6 text-white shadow-[0_32px_100px_rgba(0,0,0,0.58)] sm:min-h-[680px] sm:p-10"
@@ -160,7 +199,7 @@ export function MeetingBoard({
 
       <div className="relative flex flex-1 flex-col">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-white/15 pb-4">
-          <div className="flex min-w-0 items-center gap-4">
+          <div className="flex min-w-0 flex-col items-center">
             <p className="whitespace-nowrap font-mono text-base font-bold uppercase tracking-[0.12em] text-cyan-100 sm:text-lg sm:tracking-[0.16em]">
               {DAY_LABELS[selectedDayIndex]}
               <span className="ml-2 text-white/85 sm:ml-3">
@@ -169,7 +208,7 @@ export function MeetingBoard({
             </p>
             <div
               aria-label={`Day ${selectedDayIndex + 1} of ${meetingDays.length}`}
-              className="flex items-center gap-1.5"
+              className="mt-2 flex items-center justify-center gap-1.5"
             >
               {meetingDays.map((day, index) => (
                 <span
@@ -196,9 +235,24 @@ export function MeetingBoard({
           </div>
         </div>
 
-        {selectedMeetings.length > 0 ? (
-          <div className="flex flex-1 flex-col gap-2 overflow-y-auto py-3 sm:gap-3">
-            {selectedMeetings.map((meeting) => {
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          <div
+            className={`flex min-h-0 w-full flex-1 will-change-transform ${
+              isDragging
+                ? ""
+                : "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            }`}
+            style={{
+              transform: `translate3d(calc(${-selectedDayIndex * 100}% + ${dragOffset}px), 0, 0)`,
+            }}
+          >
+            {meetingSchedules.map((meetings, dayIndex) => (
+              <div
+                key={meetingDays[dayIndex].start}
+                aria-hidden={dayIndex !== selectedDayIndex}
+                className="flex h-full w-full shrink-0 flex-col gap-2 overflow-y-auto py-3 sm:gap-3"
+              >
+                {meetings.length > 0 ? meetings.map((meeting) => {
               const meetingKey = `${meeting.id}-${meeting.start}`;
               const isTitleVisible = revealedMeetingKey === meetingKey;
               const isNextMeeting =
@@ -210,6 +264,7 @@ export function MeetingBoard({
                 <button
                   key={meetingKey}
                   type="button"
+                  tabIndex={dayIndex === selectedDayIndex ? 0 : -1}
                   aria-label="Hold to show meeting title"
                   onContextMenu={(event) => event.preventDefault()}
                   onPointerDown={(event) => {
@@ -307,15 +362,17 @@ export function MeetingBoard({
                   </p>
                 </button>
               );
-            })}
+                }) : (
+                  <div className="flex flex-1 items-center justify-center">
+                    <p className="font-mono text-2xl text-white/32 sm:text-4xl">
+                      No meetings
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-center">
-            <p className="font-mono text-2xl text-white/32 sm:text-4xl">
-              No meetings
-            </p>
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

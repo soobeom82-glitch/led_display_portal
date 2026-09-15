@@ -223,10 +223,7 @@ export function MeetingBoard({
             </div>
           </div>
           <div className="ml-auto shrink-0 text-right font-mono uppercase">
-            <p className="text-xs font-semibold tracking-[0.18em] text-white/90 sm:text-sm">
-              Time / Room
-            </p>
-            <p className="mt-1 text-[10px] tracking-[0.1em] text-white/70 sm:text-xs sm:tracking-[0.14em]">
+            <p className="text-[10px] tracking-[0.1em] text-white/70 sm:text-xs sm:tracking-[0.14em]">
               Last snapshot{" "}
               <time dateTime={syncedAt} className="font-bold text-amber-100">
                 {snapshotTime}

@@ -51,6 +51,7 @@ test("normalizes Korean, timed, all-day, recurring, and optional fields", () => 
           end: "2026-09-12T13:00:00+09:00",
           allDay: false,
           responseStatus: "YES",
+          videoMeeting: true,
         },
         {
           id: "all-day@example.com",
@@ -79,6 +80,7 @@ test("normalizes Korean, timed, all-day, recurring, and optional fields", () => 
   assert.equal(parsed.upcoming.events[1].start, "2026-09-12T03:00:00.000Z");
   assert.equal(parsed.upcoming.events[1].location, "");
   assert.equal(parsed.upcoming.events[1].responseStatus, "yes");
+  assert.equal(parsed.upcoming.events[1].videoMeeting, true);
   assert.equal(parsed.upcoming.events[2].id, "recurring@example.com");
 });
 
@@ -102,6 +104,29 @@ test("rejects an unknown calendar response status", () => {
         },
       }),
     /responseStatus is invalid/,
+  );
+});
+
+test("rejects an invalid video meeting flag", () => {
+  assert.throws(
+    () =>
+      parseCalendarSyncPayload({
+        ...basePayload,
+        today: {
+          ...basePayload.today,
+          events: [
+            {
+              id: "meeting@example.com",
+              title: "회의",
+              start: "2026-09-11T01:00:00.000Z",
+              end: "2026-09-11T02:00:00.000Z",
+              allDay: false,
+              videoMeeting: "yes",
+            },
+          ],
+        },
+      }),
+    /videoMeeting must be a boolean/,
   );
 });
 

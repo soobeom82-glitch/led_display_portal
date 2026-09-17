@@ -4,6 +4,7 @@ import {
   compactMeetingLocation,
   findMeetingAlert,
   findNextMeetingSchedule,
+  formatMeetingLocation,
   getMeetingSchedule,
 } from "./next-meeting.ts";
 import type { CalendarEvent } from "../types.ts";
@@ -118,6 +119,15 @@ test("ignores all-day events and normalizes missing rooms", () => {
     null,
   );
   assert.equal(compactMeetingLocation(""), null);
+});
+
+test("labels Google Meet events with and without a physical room", () => {
+  assert.equal(formatMeetingLocation("", true), "화상");
+  assert.equal(
+    formatMeetingLocation("판교아지트 B동-7-lzone-B7-R11 (8)", true),
+    "B7-R11 · 화상",
+  );
+  assert.equal(formatMeetingLocation("", false), null);
 });
 
 test("builds a chronological timed schedule without calendar details", () => {

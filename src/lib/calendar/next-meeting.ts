@@ -4,7 +4,13 @@ export const UPCOMING_WINDOW_MINUTES = 30;
 
 export type MeetingTiming = Pick<
   CalendarEvent,
-  "id" | "title" | "start" | "end" | "allDay" | "location"
+  | "id"
+  | "title"
+  | "start"
+  | "end"
+  | "allDay"
+  | "location"
+  | "videoMeeting"
 >;
 
 export function compactMeetingLocation(location: string) {
@@ -24,6 +30,19 @@ export function compactMeetingLocation(location: string) {
   return normalized || null;
 }
 
+export function formatMeetingLocation(
+  location: string,
+  videoMeeting = false,
+) {
+  const room = compactMeetingLocation(location);
+
+  if (room && videoMeeting) {
+    return `${room} · 화상`;
+  }
+
+  return room ?? (videoMeeting ? "화상" : null);
+}
+
 export function getMeetingSchedule(events: MeetingTiming[]) {
   return events
     .filter((event) => !event.allDay)
@@ -33,7 +52,7 @@ export function getMeetingSchedule(events: MeetingTiming[]) {
       title: event.title,
       start: event.start,
       end: event.end,
-      location: compactMeetingLocation(event.location),
+      location: formatMeetingLocation(event.location, event.videoMeeting),
     }));
 }
 
@@ -76,7 +95,10 @@ export function findMeetingAlert(
         id: upcoming.id,
         start: upcoming.start,
         end: upcoming.end,
-        location: compactMeetingLocation(upcoming.location),
+        location: formatMeetingLocation(
+          upcoming.location,
+          upcoming.videoMeeting,
+        ),
         phase: "upcoming",
         minutesUntil,
       };
@@ -100,7 +122,10 @@ export function findMeetingAlert(
     id: inProgress.id,
     start: inProgress.start,
     end: inProgress.end,
-    location: compactMeetingLocation(inProgress.location),
+    location: formatMeetingLocation(
+      inProgress.location,
+      inProgress.videoMeeting,
+    ),
     phase: "in-progress",
     minutesUntil: null,
   };

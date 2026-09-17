@@ -59,6 +59,18 @@ function asResponseStatus(value: unknown, field: string) {
   return status as CalendarEvent["responseStatus"];
 }
 
+function asOptionalBoolean(value: unknown, field: string) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "boolean") {
+    throw new Error(`${field} must be a boolean.`);
+  }
+
+  return value;
+}
+
 function parseEvent(value: unknown, index: number, rangeName: string): CalendarEvent {
   const event = asRecord(value, `${rangeName}.events[${index}]`);
   const start = asIsoDate(event.start, `${rangeName}.events[${index}].start`);
@@ -91,6 +103,10 @@ function parseEvent(value: unknown, index: number, rangeName: string): CalendarE
     responseStatus: asResponseStatus(
       event.responseStatus,
       `${rangeName}.events[${index}].responseStatus`,
+    ),
+    videoMeeting: asOptionalBoolean(
+      event.videoMeeting,
+      `${rangeName}.events[${index}].videoMeeting`,
     ),
   };
 }

@@ -51,6 +51,7 @@ export interface CalendarEvent {
   location: string;
   description: string;
   responseStatus?: "invited" | "maybe" | "no" | "owner" | "yes";
+  videoMeeting?: boolean;
 }
 
 export interface CalendarEventRange {

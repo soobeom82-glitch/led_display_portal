@@ -84,7 +84,9 @@ curl -s \
 모든 시간은 전송 시 ISO 8601 UTC 형식으로 정규화되고, 표시할 때 `Asia/Seoul`로
 변환한다. 종일 일정은 `allDay: true`, 장소와 설명이 없으면 빈 문자열이다. 실행 사용자의
 참석 상태는 Calendar API 응답의 `attendees[].self.responseStatus`를 읽어
-`responseStatus`로 정규화한다.
+`responseStatus`로 정규화한다. Google Meet가 연결된 일정은 `hangoutLink`와
+`conferenceData`를 확인해 `videoMeeting: true`로 저장한다. 실제 회의실이 없으면
+`화상`, 회의실도 있으면 `B7-R11 · 화상`처럼 함께 표시한다.
 
 Apps Script는 내 응답이 `declined`인 참여 거절 일정과 제목에 `휴가`가 포함된 일정을
 스냅샷 생성 단계에서 제외한다. Vercel도 같은 필터를 다시 적용하므로 오래된 스냅샷에

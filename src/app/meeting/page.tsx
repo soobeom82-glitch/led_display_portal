@@ -12,6 +12,7 @@ function toMeetingTiming(event: CalendarEvent) {
     end: event.end,
     allDay: event.allDay,
     location: event.location,
+    videoMeeting: event.videoMeeting,
   };
 }
 

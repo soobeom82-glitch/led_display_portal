@@ -256,6 +256,7 @@ export function MeetingBoard({
                 nextMeeting?.id === meeting.id &&
                 nextMeeting.start === meeting.start;
               const hasEnded = Date.parse(meeting.end) <= now.getTime();
+              const hasRoomAndVideo = meeting.location?.includes(" · ");
 
               return (
                 <button
@@ -350,9 +351,13 @@ export function MeetingBoard({
                   </div>
                   <p
                     className={`truncate text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${
-                      isNextMeeting
-                        ? "text-4xl sm:text-6xl"
-                        : "text-3xl sm:text-4xl"
+                      hasRoomAndVideo
+                        ? isNextMeeting
+                          ? "text-3xl sm:text-4xl"
+                          : "text-2xl sm:text-3xl"
+                        : isNextMeeting
+                          ? "text-4xl sm:text-6xl"
+                          : "text-3xl sm:text-4xl"
                     }`}
                   >
                     {meeting.location ?? "--"}

@@ -175,8 +175,25 @@ function normalizeApiEvent_(event) {
     allDay: allDay,
     location: event.location || '',
     description: event.description || '',
-    responseStatus: getApiResponseStatus_(event)
+    responseStatus: getApiResponseStatus_(event),
+    videoMeeting: hasGoogleMeet_(event)
   };
+}
+
+function hasGoogleMeet_(event) {
+  const solutionType = event.conferenceData &&
+    event.conferenceData.conferenceSolution &&
+    event.conferenceData.conferenceSolution.key &&
+    event.conferenceData.conferenceSolution.key.type;
+  const hasMeetEntryPoint = (event.conferenceData &&
+    event.conferenceData.entryPoints || []).some(function(entryPoint) {
+      return entryPoint.entryPointType === 'video' &&
+        /(^|\/)meet\.google\.com\//i.test(entryPoint.uri || '');
+    });
+
+  return solutionType === 'hangoutsMeet' ||
+    /^https?:\/\/meet\.google\.com\//i.test(event.hangoutLink || '') ||
+    hasMeetEntryPoint;
 }
 
 function normalizeApiDate_(value) {

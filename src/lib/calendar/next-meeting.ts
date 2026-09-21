@@ -14,11 +14,13 @@ export type MeetingTiming = Pick<
 >;
 
 export function compactMeetingLocation(location: string) {
-  const roomCodes = location.match(/\b[A-Z]\d+(?:-[A-Z]+\d+|[A-Z]+\d+)\b/gi);
+  const roomCodes = location.match(
+    /\b[A-Z]\d+(?:-[A-Z]+\d+|[A-Z]+\d+)\b(?:\s*\(\d+\))?/gi,
+  );
   const roomCode = roomCodes?.at(-1);
 
   if (roomCode) {
-    return roomCode.toUpperCase();
+    return roomCode.replace(/\s*\(/, " (").toUpperCase();
   }
 
   const parts = location.trim().split(/\s+/);

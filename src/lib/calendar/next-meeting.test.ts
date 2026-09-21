@@ -60,7 +60,7 @@ test("shows the first meeting countdown in minutes from the 30-minute mark", () 
   assert.equal(alert?.id, "first");
   assert.equal(alert?.phase, "upcoming");
   assert.equal(alert?.minutesUntil, 30);
-  assert.equal(alert?.location, "B7-R11");
+  assert.equal(alert?.location, "B7-R11 (8)");
 });
 
 test("shows only the current room during the first half of a meeting", () => {
@@ -72,7 +72,7 @@ test("shows only the current room during the first half of a meeting", () => {
   assert.equal(alert?.id, "first");
   assert.equal(alert?.phase, "in-progress");
   assert.equal(alert?.minutesUntil, null);
-  assert.equal(alert?.location, "B7-R11");
+  assert.equal(alert?.location, "B7-R11 (8)");
 });
 
 test("prioritizes the next meeting during its 30-minute window", () => {
@@ -84,7 +84,7 @@ test("prioritizes the next meeting during its 30-minute window", () => {
   assert.equal(alert?.id, "second");
   assert.equal(alert?.phase, "upcoming");
   assert.equal(alert?.minutesUntil, 30);
-  assert.equal(alert?.location, "B7-R12");
+  assert.equal(alert?.location, "B7-R12 (8)");
 });
 
 test("shows only the second room while the second meeting is in progress", () => {
@@ -96,7 +96,7 @@ test("shows only the second room while the second meeting is in progress", () =>
   assert.equal(alert?.id, "second");
   assert.equal(alert?.phase, "in-progress");
   assert.equal(alert?.minutesUntil, null);
-  assert.equal(alert?.location, "B7-R12");
+  assert.equal(alert?.location, "B7-R12 (8)");
 });
 
 test("shows nothing when the final meeting ends", () => {
@@ -125,7 +125,7 @@ test("labels Google Meet events with and without a physical room", () => {
   assert.equal(formatMeetingLocation("", true), "화상");
   assert.equal(
     formatMeetingLocation("판교아지트 B동-7-lzone-B7-R11 (8)", true),
-    "B7-R11 · 화상",
+    "B7-R11 (8) · 화상",
   );
   assert.equal(formatMeetingLocation("", false), null);
 });
@@ -148,14 +148,14 @@ test("builds a chronological timed schedule without calendar details", () => {
       title: "first 회의",
       start: "2026-09-11T10:00:00.000Z",
       end: "2026-09-11T11:00:00.000Z",
-      location: "B7-R11",
+      location: "B7-R11 (8)",
     },
     {
       id: "second",
       title: "second 회의",
       start: "2026-09-11T11:00:00.000Z",
       end: "2026-09-11T12:00:00.000Z",
-      location: "B7-R12",
+      location: "B7-R12 (8)",
     },
   ]);
 });
@@ -168,7 +168,7 @@ test("finds the next timed meeting and returns its remaining whole minutes", () 
 
   assert.equal(nextMeeting?.id, "second");
   assert.equal(nextMeeting?.minutesUntil, 45);
-  assert.equal(nextMeeting?.location, "B7-R12");
+  assert.equal(nextMeeting?.location, "B7-R12 (8)");
 });
 
 test("returns no next meeting after the final meeting starts", () => {

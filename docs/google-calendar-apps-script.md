@@ -86,7 +86,7 @@ curl -s \
 참석 상태는 Calendar API 응답의 `attendees[].self.responseStatus`를 읽어
 `responseStatus`로 정규화한다. Google Meet가 연결된 일정은 `hangoutLink`와
 `conferenceData`를 확인해 `videoMeeting: true`로 저장한다. 실제 회의실이 없으면
-`화상`, 회의실도 있으면 `B7-R11 · 화상`처럼 함께 표시한다.
+`화상`, 회의실도 있으면 `B7-R11 (8) · 화상`처럼 함께 표시한다.
 
 Apps Script는 내 응답이 `declined`인 참여 거절 일정과 제목에 `휴가`가 포함된 일정을
 스냅샷 생성 단계에서 제외한다. Vercel도 같은 필터를 다시 적용하므로 오래된 스냅샷에
@@ -102,7 +102,7 @@ Vercel은 `upcoming.events`에서 종일 일정을 제외하고 `calendar.meetin
 그 외 시간에는 `meeting: null`이다.
 
 `location`은 Google Calendar 장소 문자열의 회의실 코드 패턴을 찾아 사용하므로
-`판교아지트 B동-7-lzone-B7-R11 (8)`은 `B7-R11`로 표시된다. 원본 장소는
+`판교아지트 B동-7-lzone-B7-R11 (8)`은 `B7-R11 (8)`로 표시된다. 원본 장소는
 `upcoming.events[].location`에 그대로 보존된다. `/meeting` 브라우저 미리보기는
 이전·다음 버튼으로 어제·오늘·내일의 시간 지정 일정을 탐색할 수 있으며, 실제 다음 회의를
 크게 강조하고 30분 전부터 남은 분을 표시한다. 화면 상태는 30초마다 계산하고 1분마다

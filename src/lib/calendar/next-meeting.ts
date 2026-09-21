@@ -14,6 +14,12 @@ export type MeetingTiming = Pick<
 >;
 
 export function compactMeetingLocation(location: string) {
+  const switchOnRoom = location.match(/스위치온\s*(\d+)\b/i);
+
+  if (switchOnRoom) {
+    return `스위치온${switchOnRoom[1]}`;
+  }
+
   const roomCodes = location.match(
     /\b[A-Z]\d+(?:-[A-Z]+\d+|[A-Z]+\d+)\b(?:\s*\(\d+\))?/gi,
   );

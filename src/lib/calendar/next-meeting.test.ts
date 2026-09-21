@@ -121,6 +121,15 @@ test("ignores all-day events and normalizes missing rooms", () => {
   assert.equal(compactMeetingLocation(""), null);
 });
 
+test("keeps the SwitchOn room name with its room number", () => {
+  assert.equal(compactMeetingLocation("스위치온 2"), "스위치온2");
+  assert.equal(
+    compactMeetingLocation("판교아지트 B동 7층 스위치온 2"),
+    "스위치온2",
+  );
+  assert.equal(formatMeetingLocation("스위치온 2", true), "스위치온2 · 화상");
+});
+
 test("labels Google Meet events with and without a physical room", () => {
   assert.equal(formatMeetingLocation("", true), "화상");
   assert.equal(

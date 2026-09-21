@@ -179,6 +179,15 @@ export function MeetingBoard({
     setIsDragging(false);
   }
 
+  function rotateDay() {
+    if (meetingDays.length === 0) {
+      return;
+    }
+
+    setRevealedMeetingKey(null);
+    setSelectedDayIndex((index) => (index + 1) % meetingDays.length);
+  }
+
   return (
     <section
       onPointerDown={startSwipe}
@@ -199,7 +208,12 @@ export function MeetingBoard({
 
       <div className="relative flex flex-1 flex-col">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-white/15 pb-4">
-          <div className="flex min-w-0 flex-col items-center">
+          <button
+            type="button"
+            onClick={rotateDay}
+            aria-label={`Show next day. Currently ${DAY_LABELS[selectedDayIndex]}`}
+            className="flex min-w-0 touch-manipulation flex-col items-center rounded-xl px-2 py-1 transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-200/70 active:bg-white/10"
+          >
             <p className="whitespace-nowrap font-mono text-base font-bold uppercase tracking-[0.12em] text-cyan-100 sm:text-lg sm:tracking-[0.16em]">
               {DAY_LABELS[selectedDayIndex]}
               <span className="ml-2 text-white/85 sm:ml-3">
@@ -221,7 +235,7 @@ export function MeetingBoard({
                 />
               ))}
             </div>
-          </div>
+          </button>
           <div className="ml-auto shrink-0 text-right font-mono uppercase">
             <p className="text-[10px] tracking-[0.1em] text-white/70 sm:text-xs sm:tracking-[0.14em]">
               Last snapshot{" "}

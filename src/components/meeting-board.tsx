@@ -34,6 +34,24 @@ function formatMeetingDate(value: string) {
   return `${getPart("weekday")}. ${getPart("month")} ${getPart("day")}`;
 }
 
+function getLocationTextSizeClass(location: string | null, isNext: boolean) {
+  const length = location?.length ?? 0;
+
+  if (length > 12) {
+    return isNext
+      ? "text-[clamp(1.25rem,3.2vw,2.25rem)]"
+      : "text-[clamp(1.125rem,2.8vw,1.875rem)]";
+  }
+
+  if (length > 7) {
+    return isNext
+      ? "text-[clamp(1.75rem,4.5vw,2.75rem)]"
+      : "text-[clamp(1.5rem,3.8vw,2.25rem)]";
+  }
+
+  return isNext ? "text-4xl sm:text-6xl" : "text-3xl sm:text-4xl";
+}
+
 interface MeetingDay {
   start: string;
   events: MeetingTiming[];
@@ -270,7 +288,6 @@ export function MeetingBoard({
                 nextMeeting?.id === meeting.id &&
                 nextMeeting.start === meeting.start;
               const hasEnded = Date.parse(meeting.end) <= now.getTime();
-              const hasRoomAndVideo = meeting.location?.includes(" · ");
 
               return (
                 <button
@@ -298,7 +315,7 @@ export function MeetingBoard({
                   }}
                   onKeyUp={() => setRevealedMeetingKey(null)}
                   onBlur={() => setRevealedMeetingKey(null)}
-                  className={`relative grid w-full touch-pan-y select-none grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] items-center gap-5 text-left [-webkit-touch-callout:none] sm:gap-10 ${
+                  className={`relative grid w-full touch-pan-y select-none grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-center gap-3 text-left [-webkit-touch-callout:none] sm:gap-7 ${
                     isNextMeeting
                       ? "px-2 py-6 sm:px-3 sm:py-8"
                       : `border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5 ${
@@ -364,15 +381,10 @@ export function MeetingBoard({
                     </p>
                   </div>
                   <p
-                    className={`truncate text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${
-                      hasRoomAndVideo
-                        ? isNextMeeting
-                          ? "text-3xl sm:text-4xl"
-                          : "text-2xl sm:text-3xl"
-                        : isNextMeeting
-                          ? "text-4xl sm:text-6xl"
-                          : "text-3xl sm:text-4xl"
-                    }`}
+                    className={`whitespace-nowrap text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${getLocationTextSizeClass(
+                      meeting.location,
+                      isNextMeeting,
+                    )}`}
                   >
                     {meeting.location ?? "--"}
                   </p>

@@ -384,6 +384,14 @@ export function MeetingBoard({
                       {meetingTimeFormatter.format(new Date(meeting.start))}
                       <span className="mx-2 text-white/20">-</span>
                       {meetingTimeFormatter.format(new Date(meeting.end))}
+                      {responseBadge ? (
+                        <span
+                          className={`ml-2 inline-flex items-center gap-1 rounded-full border px-2 py-1 align-middle font-mono text-[9px] font-bold leading-none tracking-[0.06em] sm:ml-3 sm:text-[10px] ${responseBadge.className}`}
+                        >
+                          <span className="size-1 rounded-full bg-current" />
+                          {responseBadge.label}
+                        </span>
+                      ) : null}
                       {isNextMeeting && countdownMinutes !== null ? (
                         <span
                           className={`ml-3 inline-flex items-start gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
@@ -413,14 +421,6 @@ export function MeetingBoard({
                         </span>
                       ) : null}
                     </p>
-                    {responseBadge ? (
-                      <span
-                        className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] font-bold tracking-[0.08em] sm:mt-3 sm:px-3 sm:text-xs ${responseBadge.className}`}
-                      >
-                        <span className="size-1.5 rounded-full bg-current" />
-                        {responseBadge.label}
-                      </span>
-                    ) : null}
                   </div>
                   <p
                     className={`whitespace-nowrap text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${getLocationTextSizeClass(

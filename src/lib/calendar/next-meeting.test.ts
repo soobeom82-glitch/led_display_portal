@@ -14,6 +14,7 @@ function meeting(
   start: string,
   end: string,
   location: string,
+  responseStatus?: CalendarEvent["responseStatus"],
 ): CalendarEvent {
   return {
     id,
@@ -23,6 +24,7 @@ function meeting(
     allDay: false,
     location,
     description: "",
+    responseStatus,
   };
 }
 
@@ -32,12 +34,14 @@ const consecutiveMeetings = [
     "2026-09-11T10:00:00.000Z",
     "2026-09-11T11:00:00.000Z",
     "판교아지트 B동-7-lzone-B7-R11 (8)",
+    "yes",
   ),
   meeting(
     "second",
     "2026-09-11T11:00:00.000Z",
     "2026-09-11T12:00:00.000Z",
     "판교아지트 B동-7-lzone-B7-R12 (8)",
+    "invited",
   ),
 ];
 
@@ -158,6 +162,7 @@ test("builds a chronological timed schedule without calendar details", () => {
       start: "2026-09-11T10:00:00.000Z",
       end: "2026-09-11T11:00:00.000Z",
       location: "B7-R11 (8)",
+      responseStatus: "yes",
     },
     {
       id: "second",
@@ -165,6 +170,7 @@ test("builds a chronological timed schedule without calendar details", () => {
       start: "2026-09-11T11:00:00.000Z",
       end: "2026-09-11T12:00:00.000Z",
       location: "B7-R12 (8)",
+      responseStatus: "invited",
     },
   ]);
 });
@@ -178,6 +184,7 @@ test("finds the next timed meeting and returns its remaining whole minutes", () 
   assert.equal(nextMeeting?.id, "second");
   assert.equal(nextMeeting?.minutesUntil, 45);
   assert.equal(nextMeeting?.location, "B7-R12 (8)");
+  assert.equal(nextMeeting?.responseStatus, "invited");
 });
 
 test("returns no next meeting after the final meeting starts", () => {

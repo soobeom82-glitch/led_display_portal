@@ -8,6 +8,7 @@ import {
   type MeetingTiming,
   UPCOMING_WINDOW_MINUTES,
 } from "@/lib/calendar/next-meeting";
+import type { CalendarEvent } from "@/lib/types";
 
 const meetingTimeFormatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Asia/Seoul",
@@ -50,6 +51,38 @@ function getLocationTextSizeClass(location: string | null, isNext: boolean) {
   }
 
   return isNext ? "text-4xl sm:text-6xl" : "text-3xl sm:text-4xl";
+}
+
+function getResponseBadge(status: CalendarEvent["responseStatus"]) {
+  switch (status) {
+    case "yes":
+      return {
+        label: "수락",
+        className: "border-emerald-300/25 bg-emerald-300/10 text-emerald-200",
+      };
+    case "maybe":
+      return {
+        label: "미정",
+        className: "border-amber-300/25 bg-amber-300/10 text-amber-200",
+      };
+    case "invited":
+      return {
+        label: "미응답",
+        className: "border-white/15 bg-white/7 text-white/60",
+      };
+    case "owner":
+      return {
+        label: "주최",
+        className: "border-cyan-300/25 bg-cyan-300/10 text-cyan-200",
+      };
+    case "no":
+      return {
+        label: "거절",
+        className: "border-rose-300/25 bg-rose-300/10 text-rose-200",
+      };
+    default:
+      return null;
+  }
 }
 
 interface MeetingDay {
@@ -288,6 +321,7 @@ export function MeetingBoard({
                 nextMeeting?.id === meeting.id &&
                 nextMeeting.start === meeting.start;
               const hasEnded = Date.parse(meeting.end) <= now.getTime();
+              const responseBadge = getResponseBadge(meeting.responseStatus);
 
               return (
                 <button
@@ -379,6 +413,14 @@ export function MeetingBoard({
                         </span>
                       ) : null}
                     </p>
+                    {responseBadge ? (
+                      <span
+                        className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] font-bold tracking-[0.08em] sm:mt-3 sm:px-3 sm:text-xs ${responseBadge.className}`}
+                      >
+                        <span className="size-1.5 rounded-full bg-current" />
+                        {responseBadge.label}
+                      </span>
+                    ) : null}
                   </div>
                   <p
                     className={`whitespace-nowrap text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${getLocationTextSizeClass(

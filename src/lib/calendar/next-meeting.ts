@@ -10,6 +10,7 @@ export type MeetingTiming = Pick<
   | "end"
   | "allDay"
   | "location"
+  | "responseStatus"
   | "videoMeeting"
 >;
 
@@ -61,6 +62,7 @@ export function getMeetingSchedule(events: MeetingTiming[]) {
       start: event.start,
       end: event.end,
       location: formatMeetingLocation(event.location, event.videoMeeting),
+      responseStatus: event.responseStatus,
     }));
 }
 

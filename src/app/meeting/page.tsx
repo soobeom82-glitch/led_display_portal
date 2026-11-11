@@ -1,20 +1,8 @@
 import { MeetingBoard } from "@/components/meeting-board";
 import { getCalendarDisplayState } from "@/lib/calendar/client";
-import type { CalendarDisplayState, CalendarEvent } from "@/lib/types";
+import type { CalendarDisplayState } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
-
-function toMeetingTiming(event: CalendarEvent) {
-  return {
-    id: event.id,
-    title: event.title,
-    start: event.start,
-    end: event.end,
-    allDay: event.allDay,
-    location: event.location,
-    videoMeeting: event.videoMeeting,
-  };
-}
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -46,8 +34,7 @@ function buildMeetingDays(calendar: CalendarDisplayState, now: Date) {
         .filter(
           (event) =>
             Date.parse(event.start) < end && Date.parse(event.end) > start,
-        )
-        .map(toMeetingTiming),
+        ),
     };
   });
 }

@@ -58,27 +58,27 @@ function getResponseBadge(status: CalendarEvent["responseStatus"]) {
     case "yes":
       return {
         label: "수락",
-        className: "border-emerald-300/25 bg-emerald-300/10 text-emerald-200",
+        className: "border-emerald-400/80 bg-emerald-600",
       };
     case "maybe":
       return {
         label: "미정",
-        className: "border-amber-300/25 bg-amber-300/10 text-amber-200",
+        className: "border-amber-400/80 bg-amber-600",
       };
     case "invited":
       return {
         label: "미응답",
-        className: "border-white/15 bg-white/7 text-white/60",
+        className: "border-slate-400/80 bg-slate-600",
       };
     case "owner":
       return {
         label: "주최",
-        className: "border-cyan-300/25 bg-cyan-300/10 text-cyan-200",
+        className: "border-cyan-400/80 bg-cyan-700",
       };
     case "no":
       return {
         label: "거절",
-        className: "border-rose-300/25 bg-rose-300/10 text-rose-200",
+        className: "border-rose-400/80 bg-rose-600",
       };
     default:
       return null;
@@ -386,7 +386,7 @@ export function MeetingBoard({
                       {meetingTimeFormatter.format(new Date(meeting.end))}
                       {responseBadge ? (
                         <span
-                          className={`ml-2 inline-flex items-center gap-1 rounded-full border px-2 py-1 align-middle font-mono text-[9px] font-bold leading-none tracking-[0.06em] sm:ml-3 sm:text-[10px] ${responseBadge.className}`}
+                          className={`ml-2 inline-flex items-center gap-1 rounded-full border px-2 py-1 align-middle font-mono text-[9px] font-bold leading-none tracking-[0.06em] text-white shadow-[0_2px_8px_rgba(0,0,0,0.28)] sm:ml-3 sm:text-[10px] ${responseBadge.className}`}
                         >
                           <span className="size-1 rounded-full bg-current" />
                           {responseBadge.label}

@@ -1,9 +1,15 @@
 "use client";
 
-import { type PointerEvent, useEffect, useRef, useState } from "react";
+import {
+  type PointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   findNextMeetingSchedule,
+  getCurrentTimeMarkerIndex,
   getMeetingSchedule,
   type MeetingTiming,
   UPCOMING_WINDOW_MINUTES,
@@ -83,6 +89,35 @@ function getResponseBadge(status: CalendarEvent["responseStatus"]) {
     default:
       return null;
   }
+}
+
+function CurrentTimeLine({
+  now,
+  edge,
+}: {
+  now: Date;
+  edge: "top" | "bottom";
+}) {
+  const currentTime = meetingTimeFormatter.format(now);
+
+  return (
+    <span
+      role="separator"
+      aria-label={`Current time ${currentTime}`}
+      className={`pointer-events-none absolute inset-x-2 z-20 flex items-center gap-2 sm:inset-x-3 ${
+        edge === "top" ? "top-0 -translate-y-1/2" : "bottom-0 translate-y-1/2"
+      }`}
+    >
+      <time
+        dateTime={now.toISOString()}
+        className="shrink-0 rounded-full border border-rose-300/80 bg-rose-600 px-2 py-1 font-mono text-[9px] font-bold tracking-[0.08em] text-white shadow-[0_2px_10px_rgba(244,63,94,0.35)] sm:px-2.5 sm:text-[10px]"
+      >
+        NOW {currentTime}
+      </time>
+      <span className="h-px flex-1 bg-rose-400/90 shadow-[0_0_8px_rgba(251,113,133,0.65)]" />
+      <span className="size-2 shrink-0 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.75)]" />
+    </span>
+  );
 }
 
 interface MeetingDay {
@@ -308,139 +343,189 @@ export function MeetingBoard({
               transform: `translate3d(calc(${-selectedDayIndex * 100}% + ${dragOffset}px), 0, 0)`,
             }}
           >
-            {meetingSchedules.map((meetings, dayIndex) => (
-              <div
-                key={meetingDays[dayIndex].start}
-                aria-hidden={dayIndex !== selectedDayIndex}
-                className="flex h-full w-full shrink-0 flex-col gap-2 overflow-y-auto py-3 sm:gap-3"
-              >
-                {meetings.length > 0 ? meetings.map((meeting) => {
-              const meetingKey = `${meeting.id}-${meeting.start}`;
-              const isTitleVisible = revealedMeetingKey === meetingKey;
-              const isNextMeeting =
-                nextMeeting?.id === meeting.id &&
-                nextMeeting.start === meeting.start;
-              const hasEnded = Date.parse(meeting.end) <= now.getTime();
-              const responseBadge = getResponseBadge(meeting.responseStatus);
+            {meetingSchedules.map((meetings, dayIndex) => {
+              const currentTimeMarkerIndex =
+                dayIndex === 1
+                  ? getCurrentTimeMarkerIndex(meetings, now)
+                  : -1;
 
               return (
-                <button
-                  key={meetingKey}
-                  type="button"
-                  tabIndex={dayIndex === selectedDayIndex ? 0 : -1}
-                  aria-label="Hold to show meeting title"
-                  onContextMenu={(event) => event.preventDefault()}
-                  onPointerDown={(event) => {
-                    event.currentTarget.setPointerCapture(event.pointerId);
-                    setRevealedMeetingKey(meetingKey);
-                  }}
-                  onPointerUp={(event) => {
-                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                      event.currentTarget.releasePointerCapture(event.pointerId);
-                    }
-                    setRevealedMeetingKey(null);
-                  }}
-                  onPointerCancel={() => setRevealedMeetingKey(null)}
-                  onLostPointerCapture={() => setRevealedMeetingKey(null)}
-                  onKeyDown={(event) => {
-                    if (event.key === " " || event.key === "Enter") {
-                      setRevealedMeetingKey(meetingKey);
-                    }
-                  }}
-                  onKeyUp={() => setRevealedMeetingKey(null)}
-                  onBlur={() => setRevealedMeetingKey(null)}
-                  className={`relative grid w-full touch-pan-y select-none grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-center gap-3 text-left [-webkit-touch-callout:none] sm:gap-7 ${
-                    isNextMeeting
-                      ? "px-2 py-6 sm:px-3 sm:py-8"
-                      : `border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5 ${
-                          isTitleVisible
-                            ? "opacity-100"
-                            : hasEnded
-                              ? "opacity-30"
-                              : "opacity-65"
-                        }`
-                  }`}
+                <div
+                  key={meetingDays[dayIndex].start}
+                  aria-hidden={dayIndex !== selectedDayIndex}
+                  className="flex h-full w-full shrink-0 flex-col gap-2 overflow-y-auto py-3 sm:gap-3"
                 >
-                  {isTitleVisible ? (
-                    <span className="pointer-events-none absolute inset-0 z-10 flex items-center rounded-2xl border border-cyan-200/20 bg-[#07151c]/95 px-5 shadow-[0_14px_40px_rgba(0,0,0,0.42)] backdrop-blur-md sm:px-7">
-                      <span>
-                        <span className="block font-mono text-[9px] uppercase tracking-[0.24em] text-cyan-200/55 sm:text-xs">
-                          Meeting title
-                        </span>
-                        <span className="mt-1 line-clamp-2 block text-xl font-semibold leading-tight tracking-[-0.035em] text-white sm:text-3xl">
-                          {meeting.title}
-                        </span>
-                      </span>
-                    </span>
-                  ) : null}
-                  <div>
-                    <p
-                      className={`whitespace-nowrap font-mono font-medium tracking-[-0.05em] text-white/88 ${
-                        isNextMeeting
-                          ? "text-3xl sm:text-4xl"
-                          : "text-2xl sm:text-3xl"
-                      }`}
-                    >
-                      {meetingTimeFormatter.format(new Date(meeting.start))}
-                      <span className="mx-2 text-white/20">-</span>
-                      {meetingTimeFormatter.format(new Date(meeting.end))}
-                      {responseBadge ? (
-                        <span
-                          className={`ml-2 inline-flex items-center gap-1 rounded-full border px-2 py-1 align-middle font-mono text-[9px] font-bold leading-none tracking-[0.06em] text-white shadow-[0_2px_8px_rgba(0,0,0,0.28)] sm:ml-3 sm:text-[10px] ${responseBadge.className}`}
-                        >
-                          <span className="size-1 rounded-full bg-current" />
-                          {responseBadge.label}
-                        </span>
-                      ) : null}
-                      {isNextMeeting && countdownMinutes !== null ? (
-                        <span
-                          className={`ml-3 inline-flex items-start gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
-                            isUrgentCountdown
-                              ? "border-red-400/35 bg-red-400/12"
-                              : "border-cyan-300/25 bg-cyan-300/10"
-                          }`}
-                        >
-                          <span
-                            className={`text-[9px] font-semibold uppercase tracking-[0.12em] sm:text-[11px] ${
-                              isUrgentCountdown
-                                ? "text-red-300/70"
-                                : "text-cyan-200/55"
+                  {meetings.length > 0 ? (
+                    <>
+                      {meetings.map((meeting, meetingIndex) => {
+                        const meetingKey = `${meeting.id}-${meeting.start}`;
+                        const isTitleVisible =
+                          revealedMeetingKey === meetingKey;
+                        const isNextMeeting =
+                          nextMeeting?.id === meeting.id &&
+                          nextMeeting.start === meeting.start;
+                        const hasEnded =
+                          Date.parse(meeting.end) <= now.getTime();
+                        const responseBadge = getResponseBadge(
+                          meeting.responseStatus,
+                        );
+                        const currentTimeLineEdge =
+                          meetingIndex === currentTimeMarkerIndex
+                            ? "top"
+                            : currentTimeMarkerIndex === meetings.length &&
+                                meetingIndex === meetings.length - 1
+                              ? "bottom"
+                              : null;
+
+                        return (
+                          <button
+                            key={meetingKey}
+                            type="button"
+                            tabIndex={
+                              dayIndex === selectedDayIndex ? 0 : -1
+                            }
+                            aria-label="Hold to show meeting title"
+                            onContextMenu={(event) => event.preventDefault()}
+                            onPointerDown={(event) => {
+                              event.currentTarget.setPointerCapture(
+                                event.pointerId,
+                              );
+                              setRevealedMeetingKey(meetingKey);
+                            }}
+                            onPointerUp={(event) => {
+                              if (
+                                event.currentTarget.hasPointerCapture(
+                                  event.pointerId,
+                                )
+                              ) {
+                                event.currentTarget.releasePointerCapture(
+                                  event.pointerId,
+                                );
+                              }
+                              setRevealedMeetingKey(null);
+                            }}
+                            onPointerCancel={() =>
+                              setRevealedMeetingKey(null)
+                            }
+                            onLostPointerCapture={() =>
+                              setRevealedMeetingKey(null)
+                            }
+                            onKeyDown={(event) => {
+                              if (
+                                event.key === " " ||
+                                event.key === "Enter"
+                              ) {
+                                setRevealedMeetingKey(meetingKey);
+                              }
+                            }}
+                            onKeyUp={() => setRevealedMeetingKey(null)}
+                            onBlur={() => setRevealedMeetingKey(null)}
+                            className={`relative grid w-full touch-pan-y select-none grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-center gap-3 text-left [-webkit-touch-callout:none] sm:gap-7 ${
+                              isNextMeeting
+                                ? "px-2 py-6 sm:px-3 sm:py-8"
+                                : `border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5 ${
+                                    isTitleVisible
+                                      ? "opacity-100"
+                                      : hasEnded
+                                        ? "opacity-30"
+                                        : "opacity-65"
+                                  }`
                             }`}
                           >
-                            Starts in
-                          </span>
-                          <span
-                            className={`text-3xl font-bold leading-none tracking-[-0.06em] sm:text-5xl ${
-                              isUrgentCountdown
-                                ? "urgent-countdown"
-                                : "text-cyan-200"
-                            }`}
-                          >
-                            {countdownMinutes}m
-                          </span>
-                        </span>
-                      ) : null}
-                    </p>
-                  </div>
-                  <p
-                    className={`whitespace-nowrap text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${getLocationTextSizeClass(
-                      meeting.location,
-                      isNextMeeting,
-                    )}`}
-                  >
-                    {meeting.location ?? "--"}
-                  </p>
-                </button>
+                            {currentTimeLineEdge ? (
+                              <CurrentTimeLine
+                                now={now}
+                                edge={currentTimeLineEdge}
+                              />
+                            ) : null}
+                            {isTitleVisible ? (
+                              <span className="pointer-events-none absolute inset-0 z-10 flex items-center rounded-2xl border border-cyan-200/20 bg-[#07151c]/95 px-5 shadow-[0_14px_40px_rgba(0,0,0,0.42)] backdrop-blur-md sm:px-7">
+                                <span>
+                                  <span className="block font-mono text-[9px] uppercase tracking-[0.24em] text-cyan-200/55 sm:text-xs">
+                                    Meeting title
+                                  </span>
+                                  <span className="mt-1 line-clamp-2 block text-xl font-semibold leading-tight tracking-[-0.035em] text-white sm:text-3xl">
+                                    {meeting.title}
+                                  </span>
+                                </span>
+                              </span>
+                            ) : null}
+                            <div>
+                              <p
+                                className={`whitespace-nowrap font-mono font-medium tracking-[-0.05em] text-white/88 ${
+                                  isNextMeeting
+                                    ? "text-3xl sm:text-4xl"
+                                    : "text-2xl sm:text-3xl"
+                                }`}
+                              >
+                                {meetingTimeFormatter.format(
+                                  new Date(meeting.start),
+                                )}
+                                <span className="mx-2 text-white/20">-</span>
+                                {meetingTimeFormatter.format(
+                                  new Date(meeting.end),
+                                )}
+                                {responseBadge ? (
+                                  <span
+                                    className={`ml-2 inline-flex items-center gap-1 rounded-full border px-2 py-1 align-middle font-mono text-[9px] font-bold leading-none tracking-[0.06em] text-white shadow-[0_2px_8px_rgba(0,0,0,0.28)] sm:ml-3 sm:text-[10px] ${responseBadge.className}`}
+                                  >
+                                    <span className="size-1 rounded-full bg-current" />
+                                    {responseBadge.label}
+                                  </span>
+                                ) : null}
+                                {isNextMeeting &&
+                                countdownMinutes !== null ? (
+                                  <span
+                                    className={`ml-3 inline-flex items-start gap-2 rounded-full border px-3 py-1 align-middle font-mono sm:ml-4 sm:px-4 ${
+                                      isUrgentCountdown
+                                        ? "border-red-400/35 bg-red-400/12"
+                                        : "border-cyan-300/25 bg-cyan-300/10"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`text-[9px] font-semibold uppercase tracking-[0.12em] sm:text-[11px] ${
+                                        isUrgentCountdown
+                                          ? "text-red-300/70"
+                                          : "text-cyan-200/55"
+                                      }`}
+                                    >
+                                      Starts in
+                                    </span>
+                                    <span
+                                      className={`text-3xl font-bold leading-none tracking-[-0.06em] sm:text-5xl ${
+                                        isUrgentCountdown
+                                          ? "urgent-countdown"
+                                          : "text-cyan-200"
+                                      }`}
+                                    >
+                                      {countdownMinutes}m
+                                    </span>
+                                  </span>
+                                ) : null}
+                              </p>
+                            </div>
+                            <p
+                              className={`whitespace-nowrap text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${getLocationTextSizeClass(
+                                meeting.location,
+                                isNextMeeting,
+                              )}`}
+                            >
+                              {meeting.location ?? "--"}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <div className="flex flex-1 items-center justify-center">
+                      <p className="font-mono text-2xl text-white/32 sm:text-4xl">
+                        No meetings
+                      </p>
+                    </div>
+                  )}
+                </div>
               );
-                }) : (
-                  <div className="flex flex-1 items-center justify-center">
-                    <p className="font-mono text-2xl text-white/32 sm:text-4xl">
-                      No meetings
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
+            })}
           </div>
         </div>
       </div>

@@ -66,6 +66,17 @@ export function getMeetingSchedule(events: MeetingTiming[]) {
     }));
 }
 
+export function getCurrentTimeMarkerIndex(
+  meetings: Array<Pick<MeetingTiming, "start">>,
+  now: Date,
+) {
+  const nextMeetingIndex = meetings.findIndex(
+    (meeting) => Date.parse(meeting.start) > now.getTime(),
+  );
+
+  return nextMeetingIndex === -1 ? meetings.length : nextMeetingIndex;
+}
+
 export function findNextMeetingSchedule(events: MeetingTiming[], now: Date) {
   const nowTimestamp = now.getTime();
   const nextMeeting = getMeetingSchedule(events).find(

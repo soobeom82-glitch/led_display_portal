@@ -5,6 +5,7 @@ import {
   findMeetingAlert,
   findNextMeetingSchedule,
   formatMeetingLocation,
+  getCurrentTimeMarkerIndex,
   getMeetingSchedule,
 } from "./next-meeting.ts";
 import type { CalendarEvent } from "../types.ts";
@@ -173,6 +174,23 @@ test("builds a chronological timed schedule without calendar details", () => {
       responseStatus: "invited",
     },
   ]);
+});
+
+test("places the current-time marker before, between, or after meetings", () => {
+  const schedule = getMeetingSchedule(consecutiveMeetings);
+
+  assert.equal(
+    getCurrentTimeMarkerIndex(schedule, new Date("2026-09-11T09:00:00.000Z")),
+    0,
+  );
+  assert.equal(
+    getCurrentTimeMarkerIndex(schedule, new Date("2026-09-11T10:30:00.000Z")),
+    1,
+  );
+  assert.equal(
+    getCurrentTimeMarkerIndex(schedule, new Date("2026-09-11T12:00:00.000Z")),
+    2,
+  );
 });
 
 test("finds the next timed meeting and returns its remaining whole minutes", () => {

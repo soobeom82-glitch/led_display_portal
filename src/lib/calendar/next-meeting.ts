@@ -66,15 +66,43 @@ export function getMeetingSchedule(events: MeetingTiming[]) {
     }));
 }
 
-export function getCurrentTimeMarkerIndex(
-  meetings: Array<Pick<MeetingTiming, "start">>,
+export function getCurrentTimeMarker(
+  meetings: Array<Pick<MeetingTiming, "start" | "end">>,
   now: Date,
 ) {
-  const nextMeetingIndex = meetings.findIndex(
-    (meeting) => Date.parse(meeting.start) > now.getTime(),
+  if (meetings.length === 0) {
+    return null;
+  }
+
+  const nowTimestamp = now.getTime();
+  const currentMeetingIndex = meetings.findIndex(
+    (meeting) =>
+      Date.parse(meeting.start) <= nowTimestamp &&
+      Date.parse(meeting.end) > nowTimestamp,
   );
 
-  return nextMeetingIndex === -1 ? meetings.length : nextMeetingIndex;
+  if (currentMeetingIndex !== -1) {
+    const meeting = meetings[currentMeetingIndex];
+    const startTimestamp = Date.parse(meeting.start);
+    const endTimestamp = Date.parse(meeting.end);
+    const duration = endTimestamp - startTimestamp;
+    const progress = duration > 0 ? (nowTimestamp - startTimestamp) / duration : 0;
+
+    return {
+      meetingIndex: currentMeetingIndex,
+      positionPercent: Math.min(100, Math.max(0, progress * 100)),
+    };
+  }
+
+  const nextMeetingIndex = meetings.findIndex(
+    (meeting) => Date.parse(meeting.start) > nowTimestamp,
+  );
+
+  if (nextMeetingIndex !== -1) {
+    return { meetingIndex: nextMeetingIndex, positionPercent: 0 };
+  }
+
+  return { meetingIndex: meetings.length - 1, positionPercent: 100 };
 }
 
 export function findNextMeetingSchedule(events: MeetingTiming[], now: Date) {

@@ -5,7 +5,7 @@ import {
   findMeetingAlert,
   findNextMeetingSchedule,
   formatMeetingLocation,
-  getCurrentTimeMarkerIndex,
+  getCurrentTimeMarker,
   getMeetingSchedule,
 } from "./next-meeting.ts";
 import type { CalendarEvent } from "../types.ts";
@@ -176,20 +176,40 @@ test("builds a chronological timed schedule without calendar details", () => {
   ]);
 });
 
-test("places the current-time marker before, between, or after meetings", () => {
+test("places the current-time marker at the actual meeting progress", () => {
   const schedule = getMeetingSchedule(consecutiveMeetings);
 
-  assert.equal(
-    getCurrentTimeMarkerIndex(schedule, new Date("2026-09-11T09:00:00.000Z")),
-    0,
+  assert.deepEqual(
+    getCurrentTimeMarker(schedule, new Date("2026-09-11T09:00:00.000Z")),
+    { meetingIndex: 0, positionPercent: 0 },
   );
-  assert.equal(
-    getCurrentTimeMarkerIndex(schedule, new Date("2026-09-11T10:30:00.000Z")),
-    1,
+  assert.deepEqual(
+    getCurrentTimeMarker(schedule, new Date("2026-09-11T10:30:00.000Z")),
+    { meetingIndex: 0, positionPercent: 50 },
   );
-  assert.equal(
-    getCurrentTimeMarkerIndex(schedule, new Date("2026-09-11T12:00:00.000Z")),
-    2,
+  assert.deepEqual(
+    getCurrentTimeMarker(schedule, new Date("2026-09-11T11:30:00.000Z")),
+    { meetingIndex: 1, positionPercent: 50 },
+  );
+  assert.deepEqual(
+    getCurrentTimeMarker(schedule, new Date("2026-09-11T12:00:00.000Z")),
+    { meetingIndex: 1, positionPercent: 100 },
+  );
+});
+
+test("places the current-time marker at the next meeting while between meetings", () => {
+  const schedule = getMeetingSchedule([
+    consecutiveMeetings[0],
+    {
+      ...consecutiveMeetings[1],
+      start: "2026-09-11T12:00:00.000Z",
+      end: "2026-09-11T13:00:00.000Z",
+    },
+  ]);
+
+  assert.deepEqual(
+    getCurrentTimeMarker(schedule, new Date("2026-09-11T11:30:00.000Z")),
+    { meetingIndex: 1, positionPercent: 0 },
   );
 });
 

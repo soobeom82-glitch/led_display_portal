@@ -9,7 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   findNextMeetingSchedule,
-  getCurrentTimeMarkerIndex,
+  getCurrentTimeMarker,
   getMeetingSchedule,
   type MeetingTiming,
   UPCOMING_WINDOW_MINUTES,
@@ -93,10 +93,10 @@ function getResponseBadge(status: CalendarEvent["responseStatus"]) {
 
 function CurrentTimeLine({
   now,
-  edge,
+  positionPercent,
 }: {
   now: Date;
-  edge: "top" | "bottom";
+  positionPercent: number;
 }) {
   const currentTime = meetingTimeFormatter.format(now);
 
@@ -104,18 +104,17 @@ function CurrentTimeLine({
     <span
       role="separator"
       aria-label={`Current time ${currentTime}`}
-      className={`pointer-events-none absolute inset-x-2 z-20 flex items-center gap-2 sm:inset-x-3 ${
-        edge === "top" ? "top-0 -translate-y-1/2" : "bottom-0 translate-y-1/2"
-      }`}
+      className="pointer-events-none absolute inset-x-2 z-20 flex h-12 -translate-y-1/2 items-center justify-center sm:inset-x-3"
+      style={{ top: `${positionPercent}%` }}
     >
+      <span className="absolute inset-x-0 top-1/2 h-7 -translate-y-1/2 bg-gradient-to-r from-transparent via-cyan-200/20 to-transparent blur-md" />
+      <span className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-gradient-to-r from-cyan-200/15 via-cyan-200 to-cyan-200/15 shadow-[0_0_5px_rgba(165,243,252,0.98),0_0_18px_rgba(165,243,252,0.74)]" />
       <time
         dateTime={now.toISOString()}
-        className="shrink-0 rounded-full border border-rose-300/80 bg-rose-600 px-2 py-1 font-mono text-[9px] font-bold tracking-[0.08em] text-white shadow-[0_2px_10px_rgba(244,63,94,0.35)] sm:px-2.5 sm:text-[10px]"
+        className="relative z-10 min-w-24 rounded-full bg-cyan-200 px-3 py-2 text-center font-mono text-[10px] font-bold tracking-[0.08em] text-[#031013] shadow-[0_0_28px_rgba(165,243,252,0.82)] sm:min-w-28 sm:px-4 sm:text-xs"
       >
         NOW {currentTime}
       </time>
-      <span className="h-px flex-1 bg-rose-400/90 shadow-[0_0_8px_rgba(251,113,133,0.65)]" />
-      <span className="size-2 shrink-0 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.75)]" />
     </span>
   );
 }
@@ -344,10 +343,8 @@ export function MeetingBoard({
             }}
           >
             {meetingSchedules.map((meetings, dayIndex) => {
-              const currentTimeMarkerIndex =
-                dayIndex === 1
-                  ? getCurrentTimeMarkerIndex(meetings, now)
-                  : -1;
+              const currentTimeMarker =
+                dayIndex === 1 ? getCurrentTimeMarker(meetings, now) : null;
 
               return (
                 <div
@@ -369,13 +366,10 @@ export function MeetingBoard({
                         const responseBadge = getResponseBadge(
                           meeting.responseStatus,
                         );
-                        const currentTimeLineEdge =
-                          meetingIndex === currentTimeMarkerIndex
-                            ? "top"
-                            : currentTimeMarkerIndex === meetings.length &&
-                                meetingIndex === meetings.length - 1
-                              ? "bottom"
-                              : null;
+                        const currentTimeLinePosition =
+                          currentTimeMarker?.meetingIndex === meetingIndex
+                            ? currentTimeMarker.positionPercent
+                            : null;
 
                         return (
                           <button
@@ -424,7 +418,8 @@ export function MeetingBoard({
                               isNextMeeting
                                 ? "px-2 py-6 sm:px-3 sm:py-8"
                                 : `border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5 ${
-                                    isTitleVisible
+                                    isTitleVisible ||
+                                    currentTimeLinePosition !== null
                                       ? "opacity-100"
                                       : hasEnded
                                         ? "opacity-30"
@@ -432,10 +427,10 @@ export function MeetingBoard({
                                   }`
                             }`}
                           >
-                            {currentTimeLineEdge ? (
+                            {currentTimeLinePosition !== null ? (
                               <CurrentTimeLine
                                 now={now}
-                                edge={currentTimeLineEdge}
+                                positionPercent={currentTimeLinePosition}
                               />
                             ) : null}
                             {isTitleVisible ? (

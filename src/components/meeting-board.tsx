@@ -370,6 +370,11 @@ export function MeetingBoard({
                           currentTimeMarker?.meetingIndex === meetingIndex
                             ? currentTimeMarker.positionPercent
                             : null;
+                        const meetingContentOpacity = hasEnded
+                          ? "opacity-30"
+                          : isNextMeeting
+                            ? "opacity-100"
+                            : "opacity-65";
 
                         return (
                           <button
@@ -417,14 +422,7 @@ export function MeetingBoard({
                             className={`relative grid w-full touch-pan-y select-none grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-center gap-3 text-left [-webkit-touch-callout:none] sm:gap-7 ${
                               isNextMeeting
                                 ? "px-2 py-6 sm:px-3 sm:py-8"
-                                : `border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5 ${
-                                    isTitleVisible ||
-                                    currentTimeLinePosition !== null
-                                      ? "opacity-100"
-                                      : hasEnded
-                                        ? "opacity-30"
-                                        : "opacity-65"
-                                  }`
+                                : "border-b border-white/8 px-2 py-4 last:border-b-0 sm:px-3 sm:py-5"
                             }`}
                           >
                             {currentTimeLinePosition !== null ? (
@@ -445,7 +443,7 @@ export function MeetingBoard({
                                 </span>
                               </span>
                             ) : null}
-                            <div>
+                            <div className={meetingContentOpacity}>
                               <p
                                 className={`whitespace-nowrap font-mono font-medium tracking-[-0.05em] text-white/88 ${
                                   isNextMeeting
@@ -500,7 +498,7 @@ export function MeetingBoard({
                               </p>
                             </div>
                             <p
-                              className={`whitespace-nowrap text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${getLocationTextSizeClass(
+                              className={`whitespace-nowrap text-right font-mono font-semibold tracking-[-0.05em] text-amber-200 ${meetingContentOpacity} ${getLocationTextSizeClass(
                                 meeting.location,
                                 isNextMeeting,
                               )}`}

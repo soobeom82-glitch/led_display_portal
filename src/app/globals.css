@@ -67,6 +67,25 @@ a {
     linear-gradient(155deg, #0a151b 0%, #080b10 58%, #110e0b 100%);
 }
 
+.paper-planner-board {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 58px,
+      rgba(220, 72, 58, 0.22) 58px,
+      rgba(220, 72, 58, 0.22) 60px,
+      transparent 60px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 31px,
+      rgba(51, 74, 79, 0.09) 31px,
+      rgba(51, 74, 79, 0.09) 32px
+    ),
+    #f2ead8;
+}
+
 .display-glow {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 56px rgba(0, 0, 0, 0.4);
 }
